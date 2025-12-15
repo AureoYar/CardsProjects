@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personalized Multi-Category Insight Card (Always Visible)</title>
+
+    <style>
+        /* CSS Variables */
+        :root {
+            --primary-color: #007bff; /* Professional Blue */
+            --secondary-color: #28a745; /* Green Accent */
+            --background-color: #f8f9fa; 
+            --revealed-bg-color: #e9ecef; 
+            --text-color: #343a40;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --card-size: 300px;
+        }
+
+        /* Basic Reset and Layout */
+        body {
+            font-family: var(--font-family);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            font-weight: 300;
+        }
+        
+        /* --- CATEGORY BUTTONS --- */
+
+        #categoryContainer {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 25px;
+            max-width: 600px;
+            opacity: 0; /* Initially hidden */
+            transition: opacity 0.5s ease-in;
+        }
+
+        #categoryContainer.visible {
+            opacity: 1;
+        }
+        
+        .category-button {
+            background-color: #ffffff;
+            color: var(--text-color);
+            border: 1px solid #ced4da;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+
+        .category-button:hover {
+            background-color: #e9ecef;
+            border-color: var(--primary-color);
+        }
+
+        .category-button.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+            font-weight: bold;
+        }
+
+        /* Input Container */
+        .input-group {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .input-group input[type="text"] {
+            padding: 10px 15px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        /* --- CARD 3D STYLING (Unchanged) --- */
+        .card {
+            width: var(--card-size);
+            height: var(--card-size);
+            perspective: 1000px;
+            margin: 20px auto;
+            cursor: pointer;
+            box-sizing: border-box;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s;
+        }
+        
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+            border-radius: 15px;
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .card-face-front {
+            background-color: #ffffff;
+            color: var(--text-color);
+            transform: rotateY(0deg);
+        }
+
+        .card-face-back {
+            background-color: var(--revealed-bg-color);
+            color: var(--text-color);
+            transform: rotateY(180deg);
+        }
+        
+        /* States and Interactions */
+
+        .card.disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .card:hover:not(.revealed):not(.disabled) {
+            box-shadow: 0 8px 30px rgba(0, 123, 255, 0.6);
+            transform: translateY(-5px); 
+        }
+
+        .card.revealed .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .prompt {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .insight-tip {
+            font-size: 1.1em;
+            font-style: italic;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        /* Action Buttons */
+        .button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.2s, transform 0.2s, opacity 0.3s;
+        }
+
+        .button:hover {
+            background-color: #1e7e34;
+            transform: translateY(-2px);
+        }
+
+        #resetButton {
+            margin-top: 20px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #resetButton.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Hello 👀, Here are some tips of life, hope they help 😃</h1>
+
+        <div class="input-group" id="setupContainer">
+            <input type="text" id="nameInput" placeholder="Enter your name (Optional)">
+            <button class="button" id="startButton">Start</button>
+        </div>
+
+        <div id="categoryContainer">
+            <button class="category-button" data-category="relationships">💖 Relationships</button>
+            <button class="category-button" data-category="career">🚀 Career & Growth</button>
+            <button class="category-button" data-category="finance">💰 Financial Wisdom</button>
+            <button class="category-button" data-category="travel">🌍 Travel & Adventure</button>
+        </div>
+
+        <div id="insightCard" class="card disabled">
+            <div class="card-inner">
+                <div class="card-face card-face-front">
+                    <p id="promptText" class="prompt">Enter your name and click 'Start' to begin.</p>
+                </div>
+                <div class="card-face card-face-back">
+                    <p id="tipText" class="insight-tip"></p>
+                </div>
+            </div>
+        </div>
+        
+        <button class="button" id="resetButton">Get Another Insight</button>
+
+        <p class="footer-note">Enjoy your moment of reflection.</p>
+    </div>
+
+
+    <script>
+        // --- 1. CONFIGURATION AND DATA (4 x 50 Insights) ---
+
+        const personalize = (insight, name) => insight.replace("{Name}", name);
+
+        const RELATIONSHIP_INSIGHTS = [
+            "{Name}, always choose curiosity over judgment. Ask 'why,' not 'what's wrong?'",
+            // ... (49 more Relationship Insights)
+            "{Name}, the foundation of a strong bond is not shared interests, but shared values.",
+            "{Name}, true intimacy is the courage to be fully known and fully accepted.",
+            "{Name}, remember your relationship is a garden; it thrives on consistent, small moments of tending.",
+            "{Name}, never stop dating your partner. Planning the next adventure keeps the spark alive.",
+            "{Name}, seek to understand, not just to respond. Active listening is key.",
+            "{Name}, your commitment is defined by how you handle disagreements, not how you avoid them.",
+            "{Name}, celebrate the small, everyday victories. They build a life worth sharing.",
+            "{Name}, boundaries are essential. They protect the best of you for the ones you love.",
+            "{Name}, kindness is a choice you make every morning. Choose it, especially when it's hard.",
+            "{Name}, forgiveness is a gift you give yourself first. Let go of the need to be right.",
+            "{Name}, invest in experiences, not just things. Memories are the currency of connection.",
+            "{Name}, honesty without compassion is cruelty. Always lead with empathy.",
+            "{Name}, the true test of patience is reacting calmly when plans fall apart.",
+            "{Name}, practice gratitude daily. It shifts focus from what's missing to what's abundant.",
+            "{Name}, self-care isn't selfish; it's the fuel you need to care for others.",
+            "{Name}, communication isn't just talking; it's making sure your partner truly heard you.",
+            "{Name}, allow your partner the space to evolve. People are meant to grow.",
+            "{Name}, vulnerability creates intimacy. Don't be afraid to show your messy parts.",
+            "{Name}, find joy in the routine. Consistency is the secret ingredient to stability.",
+            "{Name}, prioritize quality time, even if it's only 15 minutes of undivided attention.",
+            "{Name}, your energy is finite; spend it on things that truly matter.",
+            "{Name}, never criticize your partner's core identity, only their actions.",
+            "{Name}, remember the 'why.' Why did you fall in love? Revisit that source often.",
+            "{Name}, be the safe harbor your partner can always return to, without judgment.",
+            "{Name}, a healthy relationship requires two people committed to their own personal growth.",
+            "{Name}, acknowledge efforts, not just results. Effort shows commitment.",
+            "{Name}, embrace the silence. Not every moment needs to be filled with chatter.",
+            "{Name}, step away from assumptions. Clarity comes from asking questions.",
+            "{Name}, if you don't fight fair, you'll regret the victory. Play the long game.",
+            "{Name}, trust is built in drops and lost in buckets. Guard it fiercely.",
+            "{Name}, sometimes the kindest thing you can do is simply listen and nod.",
+            "{Name}, don't rely on mind-reading. Clearly state your needs and desires.",
+            "{Name}, schedule check-ins. A little proactive maintenance prevents major breakdowns.",
+            "{Name}, laughter truly is medicine. Seek out shared moments of lightness.",
+            "{Name}, learn your partner's love language, and speak it regularly.",
+            "{Name}, give grace. We all fail, and we all deserve a second chance (or a third).",
+            "{Name}, remember your partner is your teammate, not your opponent.",
+            "{Name}, the best foundation for partnership is mutual respect.",
+            "{Name}, small acts of service often speak louder than grand gestures.",
+            "{Name}, celebrate your differences. They add complexity and interest to your bond.",
+            "{Name}, don't let technology replace genuine face-to-face interaction.",
+            "{Name}, leave the past in the past. Focus on the here and now.",
+            "{Name}, show appreciation for what is done, rather than complaining about what isn't.",
+            "{Name}, create future goals together. Shared vision strengthens the bond.",
+            "{Name}, be present. Put down the phone and connect with the moment.",
+            "{Name}, apologize sincerely, without making excuses for your behavior.",
+            "{Name}, the strongest relationships are those where both people feel safe to be weak.",
+            "{Name}, find a balance between independence and interdependence.",
+            "{Name}, remember that love is an action, not just a feeling."
+        ];
+
+        const CAREER_INSIGHTS = [
+            "{Name}, small, daily actions compound into career-defining results. Be consistent.",
+            "{Name}, your network is your net worth. Invest time in building authentic connections.",
+            "{Name}, don't confuse activity with productivity. Focus on high-impact tasks.",
+            "{Name}, the biggest risk is taking none. Calculated leaps often yield the greatest rewards.",
+            "{Name}, seek feedback, not validation. The former helps you grow, the latter keeps you stuck.",
+            "{Name}, master delegation. Your job is to empower others, not do everything yourself.",
+            "{Name}, learn to say no strategically. Protecting your time protects your focus.",
+            "{Name}, successful people are simply those who have formed the habit of doing things failures don't like to do.",
+            "{Name}, your unique perspective is your superpower. Don't hide it to fit in.",
+            "{Name}, when proposing a solution, frame it around the organization's needs, not your own.",
+            "{Name}, quantify your achievements. 'Increased efficiency by 15%' is better than 'worked hard'.",
+            "{Name}, never stop learning. The moment you feel like an expert is the moment you become obsolete.",
+            "{Name}, procrastination is often rooted in perfectionism. Start messy.",
+            "{Name}, mentorship is a two-way street. Teach what you know, and humbly learn from everyone.",
+            "{Name}, view mistakes as data, not failures. Adjust and iterate quickly.",
+            "{Name}, clarity comes from engagement, not from thought. Start doing the work.",
+            "{Name}, define your 'North Star' metric. What is the one thing that truly moves the needle?",
+            "{Name}, leadership is about making those around you better, stronger, and wiser.",
+            "{Name}, build leverage. Automate, outsource, or delegate repetitive tasks.",
+            "{Name}, success is walking from failure to failure with no loss of enthusiasm.",
+            "{Name}, understand the difference between urgency and importance. Live by the latter.",
+            "{Name}, always be prepared to articulate your value in one clear sentence.",
+            "{Name}, confidence is the belief that you can solve the problems you face.",
+            "{Name}, great communication is about making complex ideas simple, not simple ideas complex.",
+            "{Name}, measure your progress by the quality of your current decisions, not past regrets.",
+            "{Name}, if you are the smartest person in the room, find a different room.",
+            "{Name}, consistency trumps intensity. A steady effort beats a sporadic sprint.",
+            "{Name}, prioritize your recovery time. Burnout is not a badge of honor.",
+            "{Name}, your career trajectory is determined by your curiosity.",
+            "{Name}, look for opportunities where your unique skills intersect with a market need.",
+            "{Name}, remember to give credit generously and take accountability quickly.",
+            "{Name}, never criticize a colleague in public; address issues privately and constructively.",
+            "{Name}, innovation requires the courage to dismantle what is comfortable.",
+            "{Name}, practice deep work. Block out time for focused tasks free from distraction.",
+            "{Name}, learn the art of negotiation. It's a key skill for advancing your goals.",
+            "{Name}, the path to expertise is paved with deliberate practice.",
+            "{Name}, don't chase titles; chase skills and impact.",
+            "{Name}, clarity of purpose is the ultimate productivity hack.",
+            "{Name}, be resourceful, not reactive. Plan your week, don't just react to emails.",
+            "{Name}, sometimes the best move is the one you didn't think of yet. Keep ideating.",
+            "{Name}, always be solving the problem beneath the problem.",
+            "{Name}, great things come from staying uncomfortable and challenging the status quo.",
+            "{Name}, don't wait for permission to lead. Take initiative.",
+            "{Name}, define success on your own terms, not by external expectations.",
+            "{Name}, your reputation is your most valuable asset. Protect it with integrity.",
+            "{Name}, focus on providing value, and rewards will follow naturally.",
+            "{Name}, understand the financial goals of your company to align your own priorities.",
+            "{Name}, ask 'What's missing?' rather than 'What's next?'",
+            "{Name}, the speed of the boss is the speed of the team.",
+            "{Name}, be patient with results but impatient with actions."
+        ];
+
+        const FINANCIAL_INSIGHTS = [
+            "{Name}, delayed gratification is the foundation of wealth. Spend less than you earn.",
+            "{Name}, pay yourself first. Set up automated savings before anything else.",
+            "{Name}, complexity is the enemy of execution. Keep your investments and budgets simple.",
+            "{Name}, an emergency fund is not an option; it is the non-negotiable insurance against debt.",
+            "{Name}, the best investment you can make is in yourself and your skills.",
+            "{Name}, budgeting is not about restriction; it's about giving every dollar a purpose.",
+            "{Name}, compound interest is the eighth wonder of the world. Start early.",
+            "{Name}, inflation is the silent tax on cash. Ensure your money is working for you.",
+            "{Name}, understand your debt. High-interest debt is a wealth killer—attack it ruthlessly.",
+            "{Name}, the highest returns often come from holding through market volatility, not trading it.",
+            "{Name}, review your subscriptions quarterly. Small leaks sink big ships.",
+            "{Name}, separate needs from wants. The gap between the two is your potential for saving.",
+            "{Name}, don't rely on future earnings to cover today's splurges.",
+            "{Name}, financial independence is not about being rich; it's about having choices.",
+            "{Name}, automate your finances: saving, investing, and bill payments.",
+            "{Name}, understand your credit score. It impacts everything from loans to insurance rates.",
+            "{Name}, taxes are your largest expense. Learn to optimize your tax strategy legally.",
+            "{Name}, the person in the mirror is your greatest financial asset or liability.",
+            "{Name}, be wary of 'get rich quick' schemes. Steady growth wins the race.",
+            "{Name}, diversification protects against ignorance. Don't put all your eggs in one basket.",
+            "{Name}, educate yourself continuously. Financial literacy is a lifelong skill.",
+            "{Name}, define what 'enough' means to you. Comparison is the thief of financial joy.",
+            "{Name}, invest in quality items that last, reducing the need for repeated purchases.",
+            "{Name}, negotiation is key. Never accept the first offer, whether buying or selling.",
+            "{Name}, track your spending for one month. Awareness precedes change.",
+            "{Name}, remember that time in the market beats timing the market.",
+            "{Name}, review your insurance coverage annually to ensure you're protected but not overpaying.",
+            "{Name}, a clear financial goal, written down, is a force multiplier for saving.",
+            "{Name}, remember that debt is the opposite of leverage for the individual consumer.",
+            "{Name}, understand the difference between asset (puts money in your pocket) and liability (takes money out).",
+            "{Name}, seek fee-only financial advice, not commission-based sales pitches.",
+            "{Name}, avoid lifestyle creep. Let your savings grow faster than your spending.",
+            "{Name}, buying an index fund is betting on human ingenuity. It's historically a good bet.",
+            "{Name}, financial freedom is the quiet sense of knowing you can handle life's surprises.",
+            "{Name}, the safest investment is often the one that helps you sleep at night.",
+            "{Name}, teach your children good money habits. It's the greatest financial legacy.",
+            "{Name}, be skeptical of consensus. When everyone agrees, the price is often wrong.",
+            "{Name}, your biggest income potential is your ability to earn more, not just save more.",
+            "{Name}, simplify your banking. Fewer accounts mean less complexity.",
+            "{Name}, always reconcile your accounts. Know exactly where your money is.",
+            "{Name}, don't let fear dictate your financial decisions. Act rationally.",
+            "{Name}, learn basic bookkeeping. Knowing your numbers is power.",
+            "{Name}, automate debt repayment to reduce interest and stress.",
+            "{Name}, be intentional about large purchases; never buy on impulse.",
+            "{Name}, define short-term, mid-term, and long-term financial targets.",
+            "{Name}, a sound financial plan is a map, not a crystal ball.",
+            "{Name}, always get multiple quotes for major services (e.g., insurance, contractors).",
+            "{Name}, financial success is a marathon, not a sprint. Be patient.",
+            "{Name}, understand the power of tax-advantaged retirement accounts.",
+            "{Name}, your future self will thank you for the disciplined choices you make today."
+        ];
+
+        const TRAVEL_INSIGHTS = [
+            "{Name}, true adventure begins when the plan ends. Embrace the unexpected detour.",
+            "{Name}, don't just visit; engage. Learn three phrases of the local language.",
+            "{Name}, pack half the clothes and twice the money. You'll always need both.",
+            "{Name}, the best sights are rarely found on the main tourist trail. Wander off the map.",
+            "{Name}, travel is the only thing you buy that makes you richer.",
+            "{Name}, remember that your home is a base, not a cage. The world awaits.",
+            "{Name}, seek connection over convenience. Stay in small guesthouses over big chains.",
+            "{Name}, the most powerful souvenir is a shift in perspective.",
+            "{Name}, when in doubt, take the local bus. It's a true window into culture.",
+            "{Name}, carry a journal. The simple act of writing cements memories.",
+            "{Name}, be a mindful traveler. Leave nothing but footprints, take nothing but photos.",
+            "{Name}, travel expands the mind because it forces you to rely on yourself.",
+            "{Name}, sometimes the best days are spent simply watching the world pass by from a cafe.",
+            "{Name}, embrace the lost feeling. It's how you discover new parts of yourself.",
+            "{Name}, don't let the fear of missing out (FOMO) rush your experience.",
+            "{Name}, the people you meet often matter more than the places you see.",
+            "{Name}, practice the art of slow travel. Depth beats speed.",
+            "{Name}, learn to be flexible. Schedules are suggestions, especially abroad.",
+            "{Name}, try the local street food. It's often the most authentic flavor of a place.",
+            "{Name}, always carry a portable charger. Lost battery means lost connection and maps.",
+            "{Name}, travel teaches you that you know much less than you thought you did.",
+            "{Name}, respect local customs, even if they seem strange to you.",
+            "{Name}, remember that travel fatigue is real. Schedule in rest days.",
+            "{Name}, book your flight, not your destination. Let the journey unfold.",
+            "{Name}, keep a physical copy of your important documents separate from the digital ones.",
+            "{Name}, the cheapest flights are often booked early or at the last minute; choose your strategy.",
+            "{Name}, if you can't afford a flight, start by exploring your own region deeply.",
+            "{Name}, always check your government's travel advisories before you go.",
+            "{Name}, try bargaining respectfully in local markets—it's part of the cultural exchange.",
+            "{Name}, travel light. The weight of your bag directly correlates with your freedom.",
+            "{Name}, invest in quality, comfortable walking shoes. Your feet are your engine.",
+            "{Name}, savor the sensation of being utterly anonymous in a new city.",
+            "{Name}, remember that the biggest barrier to travel is usually yourself, not money or time.",
+            "{Name}, pack a universal adapter. Small things save big headaches.",
+            "{Name}, seek out museums that cover local history, not just famous art.",
+            "{Name}, send postcards. It’s a dying art that truly delights people back home.",
+            "{Name}, learn to trust your intuition. If something feels wrong, step away.",
+            "{Name}, sometimes the most memorable moments are when you're alone with your thoughts.",
+            "{Name}, pre-download offline maps for every location you visit.",
+            "{Name}, take photographs, but don't experience the trip only through your camera lens.",
+            "{Name}, embrace getting lost; it's often a shortcut to discovery.",
+            "{Name}, remember that culture shock is normal. Be kind to yourself as you adjust.",
+            "{Name}, consider hostels or homestays for genuine local interaction.",
+            "{Name}, always buy travel insurance. It's the safety net you hope you never use.",
+            "{Name}, learn basic safety phrases, like 'help' or 'police,' in the local tongue.",
+            "{Name}, don't over-plan every hour. Leave room for spontaneity.",
+            "{Name}, keep an open mind about food. You might discover your new favorite dish.",
+            "{Name}, use travel as a tool for personal growth, not just an escape.",
+            "{Name}, every new stamp in your passport is a new chapter in your life story.",
+            "{Name}, remember to simply breathe and appreciate being where you are."
+        ];
+        
+        const INSIGHT_MAP = {
+            'relationships': RELATIONSHIP_INSIGHTS,
+            'career': CAREER_INSIGHTS,
+            'finance': FINANCIAL_INSIGHTS,
+            'travel': TRAVEL_INSIGHTS
+        };
+
+        const CATEGORY_NAMES = {
+            'relationships': 'Relationships',
+            'career': 'Career & Growth',
+            'finance': 'Financial Wisdom',
+            'travel': 'Travel & Adventure'
+        };
+
+
+        // --- 2. CACHED DOM ELEMENTS ---
+        const cardElement = document.getElementById('insightCard');
+        const promptTextElement = document.getElementById('promptText');
+        const tipTextElement = document.getElementById('tipText');
+        const resetButton = document.getElementById('resetButton');
+        const startButton = document.getElementById('startButton');
+        const nameInput = document.getElementById('nameInput');
+        const setupContainer = document.getElementById('setupContainer');
+        const categoryContainer = document.getElementById('categoryContainer');
+        const categoryButtons = document.querySelectorAll('.category-button'); // Select all category buttons
+
+        let userName = "Friend"; 
+        let activeInsightsArray = null; 
+        let activeCategory = null; 
+
+        // --- 3. CORE LOGIC ---
+
+        function activateCard() {
+            const inputName = nameInput.value.trim();
+            userName = inputName || "Friend";
+
+            // Hide name input UI
+            setupContainer.style.display = 'none';
+            
+            // Show category buttons
+            categoryContainer.classList.add('visible');
+
+            // Automatically set the first category as active and reveal the first insight
+            const firstButton = document.querySelector('.category-button');
+            if (firstButton) {
+                setCategory(firstButton.dataset.category);
+            }
+        }
+        
+        function setCategory(categoryKey) {
+            // Check if we are already in the process of resetting or flipping
+            if (cardElement.classList.contains('revealed') || cardElement.classList.contains('flipping')) {
+                // If the card is mid-reveal, force a reset before starting the new category
+                resetCard(true, categoryKey); 
+                return;
+            }
+
+            // Update state variables
+            activeCategory = categoryKey;
+            activeInsightsArray = INSIGHT_MAP[categoryKey];
+
+            // Update button visual state
+            categoryButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.category === categoryKey) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Update prompt and prepare for new reveal
+            const categoryName = CATEGORY_NAMES[categoryKey];
+            promptTextElement.textContent = `Hello, ${userName}! Click for an Insight on ${categoryName}.`;
+            
+            // Immediately start the flip if a new category is selected
+            if (cardElement.classList.contains('revealed')) {
+                 resetCard(true, categoryKey); // Force a reset/reveal if coming from a visible insight
+            } else {
+                 cardElement.classList.remove('disabled');
+                 revealInsight(); // Start the flip for the first time
+            }
+        }
+
+        function revealInsight() {
+            if (cardElement.classList.contains('revealed') || !activeInsightsArray) {
+                return;
+            }
+
+            // A. Pick a random insight and personalize it
+            const randomIndex = Math.floor(Math.random() * activeInsightsArray.length);
+            let selectedInsight = activeInsightsArray[randomIndex];
+            selectedInsight = personalize(selectedInsight, userName);
+
+            // B. Set the insight content
+            tipTextElement.textContent = selectedInsight;
+
+            // C. Trigger the flip 
+            cardElement.classList.add('revealed');
+
+            // D. Show button after the flip transition finishes (0.8s in CSS)
+            setTimeout(() => {
+                resetButton.classList.add('visible');
+            }, 800);
+        }
+
+        function resetCard(forceReveal = true, newCategoryKey = activeCategory) {
+            resetButton.classList.remove('visible');
+            cardElement.classList.remove('revealed');
+            
+            const categoryName = CATEGORY_NAMES[newCategoryKey];
+            promptTextElement.textContent = `Hello, ${userName}! Loading your next Insight on ${categoryName}...`;
+
+            // Wait for the CSS transition to complete (0.8s)
+            setTimeout(() => {
+                tipTextElement.textContent = ""; 
+
+                // If a new category was clicked, update the active state
+                if (newCategoryKey !== activeCategory) {
+                    activeCategory = newCategoryKey;
+                    activeInsightsArray = INSIGHT_MAP[newCategoryKey];
+                }
+                
+                if (forceReveal) {
+                    revealInsight(); 
+                } else {
+                    promptTextElement.textContent = `Hello, ${userName}! Click for an Insight on ${categoryName}.`;
+                }
+            }, 800); 
+        }
+
+        // --- 4. INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Card click listener: Only needed for the initial reveal after setting the category
+            cardElement.addEventListener('click', revealInsight);
+            
+            // Start Button handler
+            startButton.addEventListener('click', activateCard);
+            
+            // Category Button handler: Now manages category selection and new insight flow
+            categoryButtons.forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const newCategory = event.currentTarget.dataset.category;
+                    setCategory(newCategory);
+                });
+            });
+
+            // Reset Button handler: Continues to manage continuous reveal in the same category
+            resetButton.addEventListener('click', () => {
+                resetCard(true, activeCategory);
+            });
+            
+            // Handle 'Enter' key press on input
+            nameInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    activateCard();
+                }
+            });
+            
+            nameInput.focus();
+        });
+    </script>
+</body>
+</html>
