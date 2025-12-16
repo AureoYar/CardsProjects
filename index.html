@@ -3,32 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personalized Multi-Category Insight Card (Always Visible)</title>
+    <title>Insight Card: Night Mode & Animations</title>
 
     <style>
-        /* CSS Variables */
+        /* CSS Variables - Now theme-dependent */
         :root {
-            --primary-color: #007bff; /* Professional Blue */
-            --secondary-color: #28a745; /* Green Accent */
-            --background-color: #f8f9fa; 
-            --revealed-bg-color: #e9ecef; 
-            --text-color: #343a40;
-            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* Light Theme Defaults */
+            --primary-color: #007bff; /* Blue */
+            --secondary-color: #28a745; /* Green */
+            --background-color: #f8f9fa; /* Light Gray */
+            --container-bg-color: #ffffff; /* White */
+            --revealed-bg-color: #e9ecef; /* Slightly darker light gray */
+            --text-color: #343a40; /* Dark text */
+            --border-color: #ced4da;
+            --shadow-color: rgba(0, 0, 0, 0.1);
             --card-size: 300px;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* Basic Reset and Layout */
+        /* --- DARK MODE VARIABLES --- */
+        body.dark-mode {
+            --primary-color: #4da6ff; /* Lighter Blue for contrast */
+            --secondary-color: #63ff8c; /* Lighter Green */
+            --background-color: #121212; /* Very Dark Gray */
+            --container-bg-color: #1f1f1f; /* Darker container */
+            --revealed-bg-color: #2c2c2c; /* Card back */
+            --text-color: #f0f0f0; /* Light text */
+            --border-color: #444;
+            --shadow-color: rgba(0, 0, 0, 0.5);
+        }
+
+        /* Layout */
         body {
             font-family: var(--font-family);
             background-color: var(--background-color);
             color: var(--text-color);
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
             min-height: 100vh;
-            margin: 0;
+            margin: 20px 0;
             text-align: center;
+            transition: background-color 0.4s, color 0.4s; /* Smooth theme transition */
         }
 
         h1 {
@@ -37,17 +54,91 @@
             margin-bottom: 20px;
             font-weight: 300;
         }
-        
-        /* --- CATEGORY BUTTONS --- */
 
+        /* --- THEME TOGGLE BUTTON (NEW) --- */
+        #themeToggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--container-bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s;
+            line-height: 1; /* Center the icon */
+        }
+
+        #themeToggle:hover {
+            border-color: var(--primary-color);
+            transform: scale(1.05);
+        }
+        
+        /* --- MICRO-ANIMATION FIX (Applies to all clickable elements) --- */
+        .category-button, .mood-btn, .button, #themeToggle {
+            transition: all 0.2s ease-out; /* Standard transition for smooth hover/active states */
+        }
+
+        /* The key micro-animation effect */
+        .category-button:active, 
+        .mood-btn:active, 
+        .button:active,
+        #themeToggle:active {
+            transform: scale(0.95); /* Shrinks slightly when pressed */
+            box-shadow: none !important; /* Removes shadow when pressed down */
+        }
+        
+        /* --- MOOD SELECTOR STYLES --- */
+        .mood-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            opacity: 0;
+            transition: opacity 0.5s ease-in;
+            justify-content: center;
+        }
+        
+        .mood-container.visible {
+            opacity: 1;
+        }
+
+        .mood-btn {
+            background: var(--container-bg-color);
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5em;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .mood-btn:hover {
+            border-color: var(--primary-color);
+        }
+
+        .mood-btn.active {
+            background-color: var(--primary-color);
+            color: var(--container-bg-color); /* Light background for the active icon */
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        /* --- CATEGORY BUTTONS --- */
         #categoryContainer {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
             gap: 8px;
             margin-bottom: 25px;
-            max-width: 600px;
-            opacity: 0; /* Initially hidden */
+            max-width: 800px;
+            opacity: 0; 
             transition: opacity 0.5s ease-in;
         }
 
@@ -56,51 +147,31 @@
         }
         
         .category-button {
-            background-color: #ffffff;
+            background-color: var(--container-bg-color);
             color: var(--text-color);
-            border: 1px solid #ced4da;
+            border: 1px solid var(--border-color);
             padding: 8px 12px;
             border-radius: 20px;
             cursor: pointer;
             font-size: 0.9em;
-            transition: all 0.2s;
+            white-space: nowrap;
         }
 
         .category-button:hover {
-            background-color: #e9ecef;
+            background-color: var(--revealed-bg-color);
             border-color: var(--primary-color);
         }
 
         .category-button.active {
             background-color: var(--primary-color);
-            color: white;
+            color: var(--container-bg-color);
             border-color: var(--primary-color);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 2px 5px var(--shadow-color);
             font-weight: bold;
+            transform: none !important; /* Prevents :active from overriding the hover state */
         }
 
-        /* Input Container */
-        .input-group {
-            margin-bottom: 20px;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .input-group input[type="text"] {
-            padding: 10px 15px;
-            border: 1px solid #ced4da;
-            border-radius: 6px;
-            font-size: 1em;
-            transition: border-color 0.3s;
-        }
-
-        .input-group input:focus {
-            border-color: var(--primary-color);
-            outline: none;
-        }
-
-        /* --- CARD 3D STYLING (Unchanged) --- */
+        /* --- CARD STYLING --- */
         .card {
             width: var(--card-size);
             height: var(--card-size);
@@ -108,7 +179,7 @@
             margin: 20px auto;
             cursor: pointer;
             box-sizing: border-box;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 6px 20px var(--shadow-color);
             transition: box-shadow 0.3s;
         }
         
@@ -136,8 +207,9 @@
         }
 
         .card-face-front {
-            background-color: #ffffff;
+            background-color: var(--container-bg-color);
             color: var(--text-color);
+            border: 1px solid var(--border-color);
             transform: rotateY(0deg);
         }
 
@@ -147,19 +219,6 @@
             transform: rotateY(180deg);
         }
         
-        /* States and Interactions */
-
-        .card.disabled {
-            cursor: not-allowed;
-            opacity: 0.7;
-            pointer-events: none;
-        }
-
-        .card:hover:not(.revealed):not(.disabled) {
-            box-shadow: 0 8px 30px rgba(0, 123, 255, 0.6);
-            transform: translateY(-5px); 
-        }
-
         .card.revealed .card-inner {
             transform: rotateY(180deg);
         }
@@ -177,23 +236,24 @@
             line-height: 1.5;
         }
 
-        /* Action Buttons */
+        /* --- Action Buttons --- */
         .button {
             background-color: var(--secondary-color);
-            color: white;
+            color: var(--container-bg-color);
             border: none;
             padding: 10px 20px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 1em;
-            transition: background-color 0.2s, transform 0.2s, opacity 0.3s;
+            transition: all 0.2s;
         }
 
         .button:hover {
-            background-color: #1e7e34;
+            background-color: var(--primary-color); /* Use primary on hover */
             transform: translateY(-2px);
         }
-
+        
+        /* Reset Button */
         #resetButton {
             margin-top: 20px;
             opacity: 0;
@@ -208,25 +268,37 @@
 </head>
 <body>
 
+    <button id="themeToggle">🌙</button>
+
     <div class="container">
-        <h1>Hello 👀, Here are some tips of life, hope they help 😃</h1>
+        <h1>Insight Card</h1>
 
         <div class="input-group" id="setupContainer">
-            <input type="text" id="nameInput" placeholder="Enter your name (Optional)">
-            <button class="button" id="startButton">Start</button>
+            <input type="text" id="nameInput" placeholder="Enter your name">
+            <button class="button" id="startButton">Begin</button>
+        </div>
+
+        <div id="moodContainer" class="mood-container">
+            <button class="mood-btn" data-mood="action" data-label="Motivated">🚀</button>
+            <button class="mood-btn" data-mood="comfort" data-label="Stressed">🧘</button>
+            <button class="mood-btn" data-mood="clarity" data-label="Lost">💡</button>
+            <button class="mood-btn active" data-mood="any" data-label="Any">✨</button>
         </div>
 
         <div id="categoryContainer">
             <button class="category-button" data-category="relationships">💖 Relationships</button>
-            <button class="category-button" data-category="career">🚀 Career & Growth</button>
-            <button class="category-button" data-category="finance">💰 Financial Wisdom</button>
-            <button class="category-button" data-category="travel">🌍 Travel & Adventure</button>
+            <button class="category-button" data-category="career">🚀 Career</button>
+            <button class="category-button" data-category="finance">💰 Finance</button>
+            <button class="category-button" data-category="travel">🌍 Travel</button>
+            <button class="category-button" data-category="study">📚 Study</button>
+            <button class="category-button" data-category="gym">💪 Gym</button>
+            <button class="category-button" data-category="ecuador">🇪🇨 Ecuador</button>
         </div>
 
         <div id="insightCard" class="card disabled">
             <div class="card-inner">
                 <div class="card-face card-face-front">
-                    <p id="promptText" class="prompt">Enter your name and click 'Start' to begin.</p>
+                    <p id="promptText" class="prompt">Enter name to start.</p>
                 </div>
                 <div class="card-face card-face-back">
                     <p id="tipText" class="insight-tip"></p>
@@ -236,244 +308,419 @@
         
         <button class="button" id="resetButton">Get Another Insight</button>
 
-        <p class="footer-note">Enjoy your moment of reflection.</p>
+        <p class="footer-note">Select a Mood and Category for your insight.</p>
     </div>
 
 
     <script>
-        // --- 1. CONFIGURATION AND DATA (4 x 50 Insights) ---
+        // --- 1. CONFIGURATION AND DATA (Using the Object format for Moods) ---
 
-        const personalize = (insight, name) => insight.replace("{Name}", name);
+        const personalize = (insight, name) => {
+            let text = typeof insight === 'string' ? insight : insight.text;
+            return text.replace("{Name}", name);
+        };
+
+        /* DATA STRUCTURES (KEEP YOUR FULL 50 INSIGHTS HERE) */
 
         const RELATIONSHIP_INSIGHTS = [
-            "{Name}, always choose curiosity over judgment. Ask 'why,' not 'what's wrong?'",
-            // ... (49 more Relationship Insights)
-            "{Name}, the foundation of a strong bond is not shared interests, but shared values.",
-            "{Name}, true intimacy is the courage to be fully known and fully accepted.",
-            "{Name}, remember your relationship is a garden; it thrives on consistent, small moments of tending.",
-            "{Name}, never stop dating your partner. Planning the next adventure keeps the spark alive.",
-            "{Name}, seek to understand, not just to respond. Active listening is key.",
-            "{Name}, your commitment is defined by how you handle disagreements, not how you avoid them.",
-            "{Name}, celebrate the small, everyday victories. They build a life worth sharing.",
-            "{Name}, boundaries are essential. They protect the best of you for the ones you love.",
-            "{Name}, kindness is a choice you make every morning. Choose it, especially when it's hard.",
-            "{Name}, forgiveness is a gift you give yourself first. Let go of the need to be right.",
-            "{Name}, invest in experiences, not just things. Memories are the currency of connection.",
-            "{Name}, honesty without compassion is cruelty. Always lead with empathy.",
-            "{Name}, the true test of patience is reacting calmly when plans fall apart.",
-            "{Name}, practice gratitude daily. It shifts focus from what's missing to what's abundant.",
-            "{Name}, self-care isn't selfish; it's the fuel you need to care for others.",
-            "{Name}, communication isn't just talking; it's making sure your partner truly heard you.",
-            "{Name}, allow your partner the space to evolve. People are meant to grow.",
-            "{Name}, vulnerability creates intimacy. Don't be afraid to show your messy parts.",
-            "{Name}, find joy in the routine. Consistency is the secret ingredient to stability.",
-            "{Name}, prioritize quality time, even if it's only 15 minutes of undivided attention.",
-            "{Name}, your energy is finite; spend it on things that truly matter.",
-            "{Name}, never criticize your partner's core identity, only their actions.",
-            "{Name}, remember the 'why.' Why did you fall in love? Revisit that source often.",
-            "{Name}, be the safe harbor your partner can always return to, without judgment.",
-            "{Name}, a healthy relationship requires two people committed to their own personal growth.",
-            "{Name}, acknowledge efforts, not just results. Effort shows commitment.",
-            "{Name}, embrace the silence. Not every moment needs to be filled with chatter.",
-            "{Name}, step away from assumptions. Clarity comes from asking questions.",
-            "{Name}, if you don't fight fair, you'll regret the victory. Play the long game.",
-            "{Name}, trust is built in drops and lost in buckets. Guard it fiercely.",
-            "{Name}, sometimes the kindest thing you can do is simply listen and nod.",
-            "{Name}, don't rely on mind-reading. Clearly state your needs and desires.",
-            "{Name}, schedule check-ins. A little proactive maintenance prevents major breakdowns.",
-            "{Name}, laughter truly is medicine. Seek out shared moments of lightness.",
-            "{Name}, learn your partner's love language, and speak it regularly.",
-            "{Name}, give grace. We all fail, and we all deserve a second chance (or a third).",
-            "{Name}, remember your partner is your teammate, not your opponent.",
-            "{Name}, the best foundation for partnership is mutual respect.",
-            "{Name}, small acts of service often speak louder than grand gestures.",
-            "{Name}, celebrate your differences. They add complexity and interest to your bond.",
-            "{Name}, don't let technology replace genuine face-to-face interaction.",
-            "{Name}, leave the past in the past. Focus on the here and now.",
-            "{Name}, show appreciation for what is done, rather than complaining about what isn't.",
-            "{Name}, create future goals together. Shared vision strengthens the bond.",
-            "{Name}, be present. Put down the phone and connect with the moment.",
-            "{Name}, apologize sincerely, without making excuses for your behavior.",
-            "{Name}, the strongest relationships are those where both people feel safe to be weak.",
-            "{Name}, find a balance between independence and interdependence.",
-            "{Name}, remember that love is an action, not just a feeling."
+            { text: "{Name}, always choose curiosity over judgment.", tags: ['clarity'] },
+            { text: "{Name}, true intimacy is the courage to be fully known.", tags: ['comfort'] },
+            { text: "{Name}, always choose curiosity over judgment. Ask 'why,' not 'what's wrong?'", tags: ['clarity'] },
+            { text: "{Name}, true intimacy is the courage to be fully known, not just admired.", tags: ['comfort'] },
+            { text: "{Name}, don't wait for a crisis to connect. Invest daily, even in tiny ways.", tags: ['action'] },
+            { text: "{Name}, conflict isn't the opposite of intimacy; avoidance is.", tags: ['clarity'] },
+            { text: "{Name}, apologize quickly and specifically. Your bond is more important than being 'right.'", tags: ['comfort'] },
+            { text: "{Name}, schedule a 'check-in' time weekly, free of phones and distractions.", tags: ['action'] },
+            { text: "{Name}, the foundation of a strong bond is not shared interests, but shared values.", tags: ['clarity'] },
+            { text: "{Name}, love is a verb, not a feeling. Show it when you least feel like it.", tags: ['action'] },
+            { text: "{Name}, stop trying to fix them. Just listen, validate, and be present.", tags: ['comfort'] },
+            { text: "{Name}, boundaries are healthy. They define what you will and won't accept.", tags: ['clarity'] },
+            { text: "{Name}, a good relationship requires two people who are committed to growth, not perfection.", tags: ['clarity'] },
+            { text: "{Name}, express appreciation immediately. Don't let a kind gesture go unnoticed.", tags: ['action'] },
+            { text: "{Name}, remember the '5 to 1 ratio': You need five positive interactions for every negative one.", tags: ['clarity'] },
+            { text: "{Name}, sometimes the kindest thing you can do is give them space without guilt.", tags: ['comfort'] },
+            { text: "{Name}, ask open-ended questions like, 'What are you most excited about this week?'", tags: ['action'] },
+            { text: "{Name}, vulnerability is a superpower, but it must be earned through trust.", tags: ['clarity'] },
+            { text: "{Name}, remember that hurt people hurt people. Extend grace, but protect your peace.", tags: ['comfort'] },
+            { text: "{Name}, set aside 15 minutes tonight to share your dreams and worries.", tags: ['action'] },
+            { text: "{Name}, the greatest gift you can offer is your focused, undistracted attention.", tags: ['action'] },
+            { text: "{Name}, love is patient, but you don't have to be a doormat. Know your worth.", tags: ['clarity'] },
+            { text: "{Name}, never use the words 'always' or 'never' in an argument; they escalate quickly.", tags: ['clarity'] },
+            { text: "{Name}, find a way to laugh together today. Humor is a great reset button.", tags: ['comfort'] },
+            { text: "{Name}, plan something novel. Shared new experiences boost connection.", tags: ['action'] },
+            { text: "{Name}, your relationship is a mirror. What you see in others often reflects back on you.", tags: ['clarity'] },
+            { text: "{Name}, learn their 'Love Language' (Words, Acts, Gifts, Time, Touch) and speak it daily.", tags: ['action'] },
+            { text: "{Name}, don't text hard feelings. Save serious conversations for in-person or a call.", tags: ['clarity'] },
+            { text: "{Name}, be the stability they need when the world feels chaotic.", tags: ['comfort'] },
+            { text: "{Name}, the happiest relationships are those where both people are individuals, not just half a pair.", tags: ['clarity'] },
+            { text: "{Name}, send a spontaneous 'thinking of you' message right now.", tags: ['action'] },
+            { text: "{Name}, forgive others, but don't forget the lessons you learned.", tags: ['clarity'] },
+            { text: "{Name}, true intimacy is the courage to be fully known, not just admired.", tags: ['comfort'] },
+            { text: "{Name}, healthy love means accepting differences, not demanding uniformity.", tags: ['clarity'] },
+            { text: "{Name}, offer a genuine compliment that has nothing to do with their appearance.", tags: ['action'] },
+            { text: "{Name}, when you feel defensive, ask yourself: 'What am I afraid of losing?'", tags: ['clarity'] },
+            { text: "{Name}, you are enough, exactly as you are. Breathe and accept it.", tags: ['comfort'] },
+            { text: "{Name}, initiate a helpful act without being asked, like cleaning or cooking.", tags: ['action'] },
+            { text: "{Name}, emotional literacy is key. Learn to name your feelings accurately.", tags: ['clarity'] },
+            { text: "{Name}, sometimes a simple hug is all the communication that's needed.", tags: ['comfort'] },
+            { text: "{Name}, choose to assume positive intent from your loved ones today.", tags: ['clarity'] },
+            { text: "{Name}, plan the next great adventure you'll share, no matter how small.", tags: ['action'] },
+            { text: "{Name}, your past does not define your future relationships. You can break the cycle.", tags: ['clarity'] },
+            { text: "{Name}, a strong friendship foundation is the secret to lasting romance.", tags: ['comfort'] },
+            { text: "{Name}, instead of criticizing, focus on expressing your needs clearly.", tags: ['clarity'] },
+            { text: "{Name}, call a friend or family member you haven't spoken to in months.", tags: ['action'] },
+            { text: "{Name}, silence can be powerful. Don't feel the need to fill every empty space.", tags: ['comfort'] },
+            { text: "{Name}, trust is built in a thousand small moments of reliability.", tags: ['clarity'] },
+            { text: "{Name}, remember why you started. Write down three things you cherish about the relationship.", tags: ['clarity'] },
+            { text: "{Name}, take five minutes to simply sit side-by-side with no agenda.", tags: ['comfort'] },
+            { text: "{Name}, be the person you want to attract. Work on yourself first.", tags: ['action'] },
+            { text: "{Name}, healthy love allows for space and personal freedom, not just closeness.", tags: ['clarity'] },
         ];
 
         const CAREER_INSIGHTS = [
-            "{Name}, small, daily actions compound into career-defining results. Be consistent.",
-            "{Name}, your network is your net worth. Invest time in building authentic connections.",
-            "{Name}, don't confuse activity with productivity. Focus on high-impact tasks.",
-            "{Name}, the biggest risk is taking none. Calculated leaps often yield the greatest rewards.",
-            "{Name}, seek feedback, not validation. The former helps you grow, the latter keeps you stuck.",
-            "{Name}, master delegation. Your job is to empower others, not do everything yourself.",
-            "{Name}, learn to say no strategically. Protecting your time protects your focus.",
-            "{Name}, successful people are simply those who have formed the habit of doing things failures don't like to do.",
-            "{Name}, your unique perspective is your superpower. Don't hide it to fit in.",
-            "{Name}, when proposing a solution, frame it around the organization's needs, not your own.",
-            "{Name}, quantify your achievements. 'Increased efficiency by 15%' is better than 'worked hard'.",
-            "{Name}, never stop learning. The moment you feel like an expert is the moment you become obsolete.",
-            "{Name}, procrastination is often rooted in perfectionism. Start messy.",
-            "{Name}, mentorship is a two-way street. Teach what you know, and humbly learn from everyone.",
-            "{Name}, view mistakes as data, not failures. Adjust and iterate quickly.",
-            "{Name}, clarity comes from engagement, not from thought. Start doing the work.",
-            "{Name}, define your 'North Star' metric. What is the one thing that truly moves the needle?",
-            "{Name}, leadership is about making those around you better, stronger, and wiser.",
-            "{Name}, build leverage. Automate, outsource, or delegate repetitive tasks.",
-            "{Name}, success is walking from failure to failure with no loss of enthusiasm.",
-            "{Name}, understand the difference between urgency and importance. Live by the latter.",
-            "{Name}, always be prepared to articulate your value in one clear sentence.",
-            "{Name}, confidence is the belief that you can solve the problems you face.",
-            "{Name}, great communication is about making complex ideas simple, not simple ideas complex.",
-            "{Name}, measure your progress by the quality of your current decisions, not past regrets.",
-            "{Name}, if you are the smartest person in the room, find a different room.",
-            "{Name}, consistency trumps intensity. A steady effort beats a sporadic sprint.",
-            "{Name}, prioritize your recovery time. Burnout is not a badge of honor.",
-            "{Name}, your career trajectory is determined by your curiosity.",
-            "{Name}, look for opportunities where your unique skills intersect with a market need.",
-            "{Name}, remember to give credit generously and take accountability quickly.",
-            "{Name}, never criticize a colleague in public; address issues privately and constructively.",
-            "{Name}, innovation requires the courage to dismantle what is comfortable.",
-            "{Name}, practice deep work. Block out time for focused tasks free from distraction.",
-            "{Name}, learn the art of negotiation. It's a key skill for advancing your goals.",
-            "{Name}, the path to expertise is paved with deliberate practice.",
-            "{Name}, don't chase titles; chase skills and impact.",
-            "{Name}, clarity of purpose is the ultimate productivity hack.",
-            "{Name}, be resourceful, not reactive. Plan your week, don't just react to emails.",
-            "{Name}, sometimes the best move is the one you didn't think of yet. Keep ideating.",
-            "{Name}, always be solving the problem beneath the problem.",
-            "{Name}, great things come from staying uncomfortable and challenging the status quo.",
-            "{Name}, don't wait for permission to lead. Take initiative.",
-            "{Name}, define success on your own terms, not by external expectations.",
-            "{Name}, your reputation is your most valuable asset. Protect it with integrity.",
-            "{Name}, focus on providing value, and rewards will follow naturally.",
-            "{Name}, understand the financial goals of your company to align your own priorities.",
-            "{Name}, ask 'What's missing?' rather than 'What's next?'",
-            "{Name}, the speed of the boss is the speed of the team.",
-            "{Name}, be patient with results but impatient with actions."
-        ];
-
+            { text: "{Name}, small actions compound into results. Start now.", tags: ['action'] },
+            { text: "{Name}, burnout is not a badge of honor. Rest.", tags: ['comfort'] },
+            { text: "{Name}, small, daily actions compound into career-defining results. Be consistent.", tags: ['action'] },
+            { text: "{Name}, your network is your net worth. Reach out to one key contact today.", tags: ['action'] },
+            { text: "{Name}, burnout is not a badge of honor. Protect your boundaries and rest.", tags: ['comfort'] },
+            { text: "{Name}, don't just solve problems; define them. Clarity precedes mastery.", tags: ['clarity'] },
+            { text: "{Name}, define your 'North Star'. Does your current work align with your deepest purpose?", tags: ['clarity'] },
+            { text: "{Name}, delegation is a skill, not a surrender. Trust your team.", tags: ['action'] },
+            { text: "{Name}, procrastination is often rooted in fear, not laziness. Address the fear.", tags: ['clarity'] },
+            { text: "{Name}, the goal is not perfection, but momentum. Ship the work.", tags: ['action'] },
+            { text: "{Name}, seek feedback, not validation. The former helps you grow.", tags: ['clarity'] },
+            { text: "{Name}, a successful career is a marathon, not a sprint. Pace yourself.", tags: ['comfort'] },
+            { text: "{Name}, master one skill deeply rather than trying to be mediocre at ten.", tags: ['clarity'] },
+            { text: "{Name}, ask for the raise/promotion. If you don't ask, the answer is always no.", tags: ['action'] },
+            { text: "{Name}, focus on the impact, not the activity. Are you moving the needle?", tags: ['clarity'] },
+            { text: "{Name}, celebrate small wins. Acknowledge your progress daily.", tags: ['comfort'] },
+            { text: "{Name}, dedicate the first hour of your workday to your most important task.", tags: ['action'] },
+            { text: "{Name}, don't let analysis paralysis stop you. Make a decision and adjust later.", tags: ['action'] },
+            { text: "{Name}, learn to say 'no' to good opportunities so you can say 'yes' to great ones.", tags: ['clarity'] },
+            { text: "{Name}, imposter syndrome means you are growing. Embrace the discomfort.", tags: ['comfort'] },
+            { text: "{Name}, document your achievements this week. Don't rely on memory.", tags: ['action'] },
+            { text: "{Name}, your career path does not have to be linear. Detours can lead to discoveries.", tags: ['clarity'] },
+            { text: "{Name}, spend 15 minutes today learning a software shortcut or a new industry term.", tags: ['action'] },
+            { text: "{Name}, great leaders ask questions. Mediocre leaders give answers.", tags: ['clarity'] },
+            { text: "{Name}, remember to eat lunch away from your desk. Your brain needs a reset.", tags: ['comfort'] },
+            { text: "{Name}, find a mentor who has already achieved what you aspire to.", tags: ['action'] },
+            { text: "{Name}, be the one who offers solutions, not just points out problems.", tags: ['action'] },
+            { text: "{Name}, your career is your responsibility. Don't wait for permission to lead.", tags: ['clarity'] },
+            { text: "{Name}, when feeling overwhelmed, break the project into three tiny steps.", tags: ['comfort'] },
+            { text: "{Name}, always be learning. Treat curiosity as a core job requirement.", tags: ['action'] },
+            { text: "{Name}, practice radical candor: care personally, challenge directly.", tags: ['clarity'] },
+            { text: "{Name}, take ownership of mistakes. Trust is built when you admit fault.", tags: ['clarity'] },
+            { text: "{Name}, schedule deep work blocks (90 minutes) with no interruptions.", tags: ['action'] },
+            { text: "{Name}, remember you are valuable. Your unique contribution matters.", tags: ['comfort'] },
+            { text: "{Name}, look two steps ahead. What skill will be vital next year?", tags: ['clarity'] },
+            { text: "{Name}, the quickest way to kill a great idea is to present it poorly. Practice.", tags: ['action'] },
+            { text: "{Name}, manage your energy, not just your time. When are you most productive?", tags: ['clarity'] },
+            { text: "{Name}, take a five-minute walk outside right now. A change of scenery breeds creativity.", tags: ['comfort'] },
+            { text: "{Name}, dress for the job you want, not the job you have.", tags: ['action'] },
+            { text: "{Name}, the fear of judgment is a silent killer of innovation. Be brave.", tags: ['clarity'] },
+            { text: "{Name}, create a 'Done' list, not just a to-do list, to appreciate your efforts.", tags: ['comfort'] },
+            { text: "{Name}, volunteer for the difficult project. That's where rapid growth happens.", tags: ['action'] },
+            { text: "{Name}, focus on high-leverage activities that produce 80% of your results.", tags: ['clarity'] },
+            { text: "{Name}, treat rejection as redirection. Every 'no' is a step closer to a 'yes.'", tags: ['comfort'] },
+            { text: "{Name}, give a colleague a sincere, public compliment today.", tags: ['action'] },
+            { text: "{Name}, understand the difference between urgency and importance.", tags: ['clarity'] },
+            { text: "{Name}, ask your manager: 'How can I make your job easier?'", tags: ['action'] },
+            { text: "{Name}, simplify your systems. Complexity is the enemy of execution.", tags: ['clarity'] },
+            { text: "{Name}, remember to clock out on time today. The work will wait.", tags: ['comfort'] },
+            { text: "{Name}, spend 10% of your work time on personal development projects.", tags: ['action'] },
+            { text: "{Name}, be indispensable. Don't just do your job; own the process.", tags: ['clarity'] },
+            { text: "{Name}, success is walking from failure to failure with no loss of enthusiasm.", tags: ['comfort'] },
+                ];
+        
         const FINANCIAL_INSIGHTS = [
-            "{Name}, delayed gratification is the foundation of wealth. Spend less than you earn.",
-            "{Name}, pay yourself first. Set up automated savings before anything else.",
-            "{Name}, complexity is the enemy of execution. Keep your investments and budgets simple.",
-            "{Name}, an emergency fund is not an option; it is the non-negotiable insurance against debt.",
-            "{Name}, the best investment you can make is in yourself and your skills.",
-            "{Name}, budgeting is not about restriction; it's about giving every dollar a purpose.",
-            "{Name}, compound interest is the eighth wonder of the world. Start early.",
-            "{Name}, inflation is the silent tax on cash. Ensure your money is working for you.",
-            "{Name}, understand your debt. High-interest debt is a wealth killer—attack it ruthlessly.",
-            "{Name}, the highest returns often come from holding through market volatility, not trading it.",
-            "{Name}, review your subscriptions quarterly. Small leaks sink big ships.",
-            "{Name}, separate needs from wants. The gap between the two is your potential for saving.",
-            "{Name}, don't rely on future earnings to cover today's splurges.",
-            "{Name}, financial independence is not about being rich; it's about having choices.",
-            "{Name}, automate your finances: saving, investing, and bill payments.",
-            "{Name}, understand your credit score. It impacts everything from loans to insurance rates.",
-            "{Name}, taxes are your largest expense. Learn to optimize your tax strategy legally.",
-            "{Name}, the person in the mirror is your greatest financial asset or liability.",
-            "{Name}, be wary of 'get rich quick' schemes. Steady growth wins the race.",
-            "{Name}, diversification protects against ignorance. Don't put all your eggs in one basket.",
-            "{Name}, educate yourself continuously. Financial literacy is a lifelong skill.",
-            "{Name}, define what 'enough' means to you. Comparison is the thief of financial joy.",
-            "{Name}, invest in quality items that last, reducing the need for repeated purchases.",
-            "{Name}, negotiation is key. Never accept the first offer, whether buying or selling.",
-            "{Name}, track your spending for one month. Awareness precedes change.",
-            "{Name}, remember that time in the market beats timing the market.",
-            "{Name}, review your insurance coverage annually to ensure you're protected but not overpaying.",
-            "{Name}, a clear financial goal, written down, is a force multiplier for saving.",
-            "{Name}, remember that debt is the opposite of leverage for the individual consumer.",
-            "{Name}, understand the difference between asset (puts money in your pocket) and liability (takes money out).",
-            "{Name}, seek fee-only financial advice, not commission-based sales pitches.",
-            "{Name}, avoid lifestyle creep. Let your savings grow faster than your spending.",
-            "{Name}, buying an index fund is betting on human ingenuity. It's historically a good bet.",
-            "{Name}, financial freedom is the quiet sense of knowing you can handle life's surprises.",
-            "{Name}, the safest investment is often the one that helps you sleep at night.",
-            "{Name}, teach your children good money habits. It's the greatest financial legacy.",
-            "{Name}, be skeptical of consensus. When everyone agrees, the price is often wrong.",
-            "{Name}, your biggest income potential is your ability to earn more, not just save more.",
-            "{Name}, simplify your banking. Fewer accounts mean less complexity.",
-            "{Name}, always reconcile your accounts. Know exactly where your money is.",
-            "{Name}, don't let fear dictate your financial decisions. Act rationally.",
-            "{Name}, learn basic bookkeeping. Knowing your numbers is power.",
-            "{Name}, automate debt repayment to reduce interest and stress.",
-            "{Name}, be intentional about large purchases; never buy on impulse.",
-            "{Name}, define short-term, mid-term, and long-term financial targets.",
-            "{Name}, a sound financial plan is a map, not a crystal ball.",
-            "{Name}, always get multiple quotes for major services (e.g., insurance, contractors).",
-            "{Name}, financial success is a marathon, not a sprint. Be patient.",
-            "{Name}, understand the power of tax-advantaged retirement accounts.",
-            "{Name}, your future self will thank you for the disciplined choices you make today."
-        ];
+            { text: "{Name}, automate your savings today.", tags: ['action'] },
+            { text: "{Name}, financial freedom is about having choices, not just cash.", tags: ['clarity'] },
+                { text: "{Name}, automate your savings today. If you don't see it, you won't spend it.", tags: ['action'] },
+                { text: "{Name}, delayed gratification is the foundation of wealth. Spend less than you earn.", tags: ['clarity'] },
+                { text: "{Name}, financial freedom is about having choices, not just having cash.", tags: ['clarity'] },
+                { text: "{Name}, forgive your past money mistakes. Today is a fresh start.", tags: ['comfort'] },
+                { text: "{Name}, create an emergency fund first: 3-6 months of living expenses.", tags: ['action'] },
+                { text: "{Name}, focus on increasing your income, not just cutting costs. You have a ceiling on cutting.", tags: ['action'] },
+                { text: "{Name}, your greatest financial tool is your income. Protect it and increase your skills.", tags: ['clarity'] },
+                { text: "{Name}, if you can't buy it twice, you can't afford it once.", tags: ['clarity'] },
+                { text: "{Name}, remember that money is a tool, not a measure of your self-worth.", tags: ['comfort'] },
+                { text: "{Name}, check your credit score for free today. Knowledge is power.", tags: ['action'] },
+                { text: "{Name}, the cost of owning something is always greater than the price tag.", tags: ['clarity'] },
+                { text: "{Name}, pay yourself first. Treat saving as a non-negotiable bill.", tags: ['action'] },
+                { text: "{Name}, high-interest debt is a wealth killer. Prioritize paying it off.", tags: ['clarity'] },
+                { text: "{Name}, avoid lifestyle creep. Don't inflate your spending as your income grows.", tags: ['clarity'] },
+                { text: "{Name}, small daily expenses (coffee, subscriptions) compound over time. Audit them.", tags: ['action'] },
+                { text: "{Name}, remember, investing is about time in the market, not timing the market.", tags: ['clarity'] },
+                { text: "{Name}, your future self will thank you for the sacrifices you make today.", tags: ['comfort'] },
+                { text: "{Name}, spend 30 minutes creating a simple budget plan for next month.", tags: ['action'] },
+                { text: "{Name}, negotiate everything: your salary, your bills, your car price.", tags: ['action'] },
+                { text: "{Name}, understand the difference between a want and a need before you buy.", tags: ['clarity'] },
+                { text: "{Name}, diversify your income sources. Don't put all your eggs in one basket.", tags: ['clarity'] },
+                { text: "{Name}, find a financial buddy who can keep you accountable and motivated.", tags: ['action'] },
+                { text: "{Name}, you are not alone in your financial struggles. Reach out for help if needed.", tags: ['comfort'] },
+                { text: "{Name}, index funds and ETFs offer a simple, low-cost way to invest in the market.", tags: ['clarity'] },
+                { text: "{Name}, track every dollar you spend for one week to see where your money really goes.", tags: ['action'] },
+                { text: "{Name}, always get multiple quotes for insurance. Loyalty rarely pays.", tags: ['action'] },
+                { text: "{Name}, remember that financial health is tied to mental health. Be gentle with yourself.", tags: ['comfort'] },
+                { text: "{Name}, debt is not necessarily bad; distinguish between good debt (e.g., mortgages) and bad debt.", tags: ['clarity'] },
+                { text: "{Name}, compare the interest rates on all your loans and attack the highest one first (Debt Avalanche).", tags: ['action'] },
+                { text: "{Name}, avoid the urge to compare your finances to others on social media.", tags: ['comfort'] },
+                { text: "{Name}, read one chapter of a personal finance book this week.", tags: ['action'] },
+                { text: "{Name}, every investment carries risk. Don't invest in things you don't understand.", tags: ['clarity'] },
+                { text: "{Name}, review your subscriptions and cancel three you haven't used recently.", tags: ['action'] },
+                { text: "{Name}, financial peace comes from living below your means, consistently.", tags: ['clarity'] },
+                { text: "{Name}, create a 'future fun' savings pot for a goal you are excited about.", tags: ['action'] },
+                { text: "{Name}, inflation erodes your cash. Keeping too much money idle is costing you.", tags: ['clarity'] },
+                { text: "{Name}, be kind to yourself. Money mistakes happen. Learn and move on.", tags: ['comfort'] },
+                { text: "{Name}, increase your 401k contribution by 1% today. You won't miss it.", tags: ['action'] },
+                { text: "{Name}, never co-sign a loan. It's often the quickest way to ruin a relationship.", tags: ['clarity'] },
+                { text: "{Name}, think of your assets as income generators, not just things to possess.", tags: ['clarity'] },
+                { text: "{Name}, use the '30-day rule' for big purchases: wait 30 days before buying.", tags: ['action'] },
+                { text: "{Name}, remember that the most valuable thing you own is your time.", tags: ['clarity'] },
+                { text: "{Name}, budget for fun. If you restrict yourself entirely, you will fail.", tags: ['comfort'] },
+                { text: "{Name}, consider refinancing high-interest student loans or credit cards.", tags: ['action'] },
+                { text: "{Name}, ask your current bank if they can lower your checking fees.", tags: ['action'] },
+                { text: "{Name}, financial success is 80% behavior and 20% head knowledge.", tags: ['clarity'] },
+                { text: "{Name}, remember that wealth is often silent, while debt is loud and visible.", tags: ['clarity'] },
+                { text: "{Name}, review your insurance coverage. Are you over-insured or under-insured?", tags: ['action'] },
+                { text: "{Name}, financial clarity reduces anxiety. Know your numbers.", tags: ['comfort'] },
+                { text: "{Name}, spend less time worrying about money and more time working on your craft.", tags: ['action'] },
+                    ];
 
         const TRAVEL_INSIGHTS = [
-            "{Name}, true adventure begins when the plan ends. Embrace the unexpected detour.",
-            "{Name}, don't just visit; engage. Learn three phrases of the local language.",
-            "{Name}, pack half the clothes and twice the money. You'll always need both.",
-            "{Name}, the best sights are rarely found on the main tourist trail. Wander off the map.",
-            "{Name}, travel is the only thing you buy that makes you richer.",
-            "{Name}, remember that your home is a base, not a cage. The world awaits.",
-            "{Name}, seek connection over convenience. Stay in small guesthouses over big chains.",
-            "{Name}, the most powerful souvenir is a shift in perspective.",
-            "{Name}, when in doubt, take the local bus. It's a true window into culture.",
-            "{Name}, carry a journal. The simple act of writing cements memories.",
-            "{Name}, be a mindful traveler. Leave nothing but footprints, take nothing but photos.",
-            "{Name}, travel expands the mind because it forces you to rely on yourself.",
-            "{Name}, sometimes the best days are spent simply watching the world pass by from a cafe.",
-            "{Name}, embrace the lost feeling. It's how you discover new parts of yourself.",
-            "{Name}, don't let the fear of missing out (FOMO) rush your experience.",
-            "{Name}, the people you meet often matter more than the places you see.",
-            "{Name}, practice the art of slow travel. Depth beats speed.",
-            "{Name}, learn to be flexible. Schedules are suggestions, especially abroad.",
-            "{Name}, try the local street food. It's often the most authentic flavor of a place.",
-            "{Name}, always carry a portable charger. Lost battery means lost connection and maps.",
-            "{Name}, travel teaches you that you know much less than you thought you did.",
-            "{Name}, respect local customs, even if they seem strange to you.",
-            "{Name}, remember that travel fatigue is real. Schedule in rest days.",
-            "{Name}, book your flight, not your destination. Let the journey unfold.",
-            "{Name}, keep a physical copy of your important documents separate from the digital ones.",
-            "{Name}, the cheapest flights are often booked early or at the last minute; choose your strategy.",
-            "{Name}, if you can't afford a flight, start by exploring your own region deeply.",
-            "{Name}, always check your government's travel advisories before you go.",
-            "{Name}, try bargaining respectfully in local markets—it's part of the cultural exchange.",
-            "{Name}, travel light. The weight of your bag directly correlates with your freedom.",
-            "{Name}, invest in quality, comfortable walking shoes. Your feet are your engine.",
-            "{Name}, savor the sensation of being utterly anonymous in a new city.",
-            "{Name}, remember that the biggest barrier to travel is usually yourself, not money or time.",
-            "{Name}, pack a universal adapter. Small things save big headaches.",
-            "{Name}, seek out museums that cover local history, not just famous art.",
-            "{Name}, send postcards. It’s a dying art that truly delights people back home.",
-            "{Name}, learn to trust your intuition. If something feels wrong, step away.",
-            "{Name}, sometimes the most memorable moments are when you're alone with your thoughts.",
-            "{Name}, pre-download offline maps for every location you visit.",
-            "{Name}, take photographs, but don't experience the trip only through your camera lens.",
-            "{Name}, embrace getting lost; it's often a shortcut to discovery.",
-            "{Name}, remember that culture shock is normal. Be kind to yourself as you adjust.",
-            "{Name}, consider hostels or homestays for genuine local interaction.",
-            "{Name}, always buy travel insurance. It's the safety net you hope you never use.",
-            "{Name}, learn basic safety phrases, like 'help' or 'police,' in the local tongue.",
-            "{Name}, don't over-plan every hour. Leave room for spontaneity.",
-            "{Name}, keep an open mind about food. You might discover your new favorite dish.",
-            "{Name}, use travel as a tool for personal growth, not just an escape.",
-            "{Name}, every new stamp in your passport is a new chapter in your life story.",
-            "{Name}, remember to simply breathe and appreciate being where you are."
-        ];
+            { text: "{Name}, book the flight. Let the journey unfold.", tags: ['action'] },
+            { text: "{Name}, sometimes the best days are spent simply watching the world go by.", tags: ['comfort'] },
+            { text: "{Name}, true adventure begins when the plan ends. Embrace the unexpected detour.", tags: ['clarity'] },
+            { text: "{Name}, take the scenic route, even if it adds an hour to your journey.", tags: ['action'] },
+            { text: "{Name}, sometimes the best travel days are spent simply watching the world go by.", tags: ['comfort'] },
+            { text: "{Name}, learn five basic phrases in the local language before you land.", tags: ['action'] },
+            { text: "{Name}, you don't need to see everything. Focus on experiencing a few places deeply.", tags: ['clarity'] },
+            { text: "{Name}, pack half the clothes and twice the money (or better, save twice the money).", tags: ['clarity'] },
+            { text: "{Name}, travel is the only thing you buy that makes you richer.", tags: ['comfort'] },
+            { text: "{Name}, get purposefully lost in a non-touristy neighborhood today.", tags: ['action'] },
+            { text: "{Name}, always keep a small amount of local cash hidden in your luggage.", tags: ['clarity'] },
+            { text: "{Name}, try the dish that looks the weirdest. It's usually the most authentic.", tags: ['action'] },
+            { text: "{Name}, take photos, but remember to put the camera down and just observe.", tags: ['clarity'] },
+            { text: "{Name}, solo travel is a profound way to discover who you are.", tags: ['action'] },
+            { text: "{Name}, the fear of missing out (FOMO) is a trap. Be present where you are.", tags: ['comfort'] },
+            { text: "{Name}, travel with a portable power bank. A dead phone is a problem.", tags: ['clarity'] },
+            { text: "{Name}, ask locals for their favorite hidden spot; guidebooks miss the best things.", tags: ['action'] },
+            { text: "{Name}, collect experiences, not souvenirs. The memory is the treasure.", tags: ['clarity'] },
+            { text: "{Name}, if traveling with others, plan for solo time to recharge.", tags: ['comfort'] },
+            { text: "{Name}, write one postcard today and send it to your future self.", tags: ['action'] },
+            { text: "{Name}, when in doubt about packing, leave it out. You can buy almost anything.", tags: ['clarity'] },
+            { text: "{Name}, don't check a bag for trips under seven days. Carry-on is freedom.", tags: ['action'] },
+            { text: "{Name}, travel sickness is real. Pack motion sickness medication just in case.", tags: ['comfort'] },
+            { text: "{Name}, try to eat street food safely. It's often the cheapest and most delicious.", tags: ['action'] },
+            { text: "{Name}, the perfect itinerary doesn't exist. Be flexible and forgiving.", tags: ['clarity'] },
+            { text: "{Name}, remember that the feeling of coming home is part of the joy of travel.", tags: ['comfort'] },
+            { text: "{Name}, always pack earplugs and a sleep mask for flights and noisy hostels.", tags: ['action'] },
+            { text: "{Name}, keep a digital copy of your passport, visa, and insurance online.", tags: ['clarity'] },
+            { text: "{Name}, learn how to say 'thank you' in five different languages.", tags: ['action'] },
+            { text: "{Name}, don't forget to look up. Architecture and nature are often the biggest wonders.", tags: ['comfort'] },
+            { text: "{Name}, use a reusable water bottle to save money and reduce plastic waste.", tags: ['action'] },
+            { text: "{Name}, travel expands the mind because it forces you to question your normal.", tags: ['clarity'] },
+            { text: "{Name}, when bargaining, keep it light and friendly. It’s a game, not a battle.", tags: ['clarity'] },
+            { text: "{Name}, allow yourself a full day of doing absolutely nothing on your trip.", tags: ['comfort'] },
+            { text: "{Name}, buy a local SIM card immediately upon arrival for easy navigation.", tags: ['action'] },
+            { text: "{Name}, be a responsible tourist: respect local customs and dress codes.", tags: ['clarity'] },
+            { text: "{Name}, travel is the best teacher. Embrace the discomfort of learning.", tags: ['clarity'] },
+            { text: "{Name}, remember that travel anxiety is normal. Breathe and take it one step at a time.", tags: ['comfort'] },
+            { text: "{Name}, set aside a specific budget for spontaneous purchases or activities.", tags: ['action'] },
+            { text: "{Name}, download offline maps (Google Maps) before you lose Wi-Fi.", tags: ['action'] },
+            { text: "{Name}, visit a local market or grocery store to understand the culture.", tags: ['clarity'] },
+            { text: "{Name}, the memories you make on the road are worth more than any price tag.", tags: ['comfort'] },
+            { text: "{Name}, research local scams before you go, especially in major tourist cities.", tags: ['clarity'] },
+            { text: "{Name}, pack a tiny first-aid kit with essential pain relievers and bandages.", tags: ['action'] },
+            { text: "{Name}, try Couchsurfing or stay in a local guesthouse for authentic interactions.", tags: ['action'] },
+            { text: "{Name}, don't rely solely on technology. Bring a paperback book and a physical map.", tags: ['clarity'] },
+            { text: "{Name}, the world is fundamentally safe, but caution is always wise.", tags: ['clarity'] },
+            { text: "{Name}, journal your thoughts daily. Travel often changes your perspective rapidly.", tags: ['action'] },
+            { text: "{Name}, when you feel overwhelmed, find a quiet park and recenter yourself.", tags: ['comfort'] },
+            { text: "{Name}, wear layers. Weather changes quickly, especially in new environments.", tags: ['action'] },
+            { text: "{Name}, be open to changing your perception of 'home.'", tags: ['clarity'] },
+            { text: "{Name}, if you see someone struggling, offer help. You never know when you'll need it.", tags: ['action'] },
+                ];
         
+        const STUDY_INSIGHTS = [
+            { text: "{Name}, active recall beats passive reading. Test yourself now.", tags: ['action'] },
+            { text: "{Name}, sleep is when memory consolidates. Go to bed.", tags: ['comfort'] },
+            { text: "{Name}, true adventure begins when the plan ends. Embrace the unexpected detour.", tags: ['clarity'] },
+            { text: "{Name}, take the scenic route, even if it adds an hour to your journey.", tags: ['action'] },
+            { text: "{Name}, sometimes the best travel days are spent simply watching the world go by.", tags: ['comfort'] },
+            { text: "{Name}, learn five basic phrases in the local language before you land.", tags: ['action'] },
+            { text: "{Name}, you don't need to see everything. Focus on experiencing a few places deeply.", tags: ['clarity'] },
+            { text: "{Name}, pack half the clothes and twice the money (or better, save twice the money).", tags: ['clarity'] },
+            { text: "{Name}, travel is the only thing you buy that makes you richer.", tags: ['comfort'] },
+            { text: "{Name}, get purposefully lost in a non-touristy neighborhood today.", tags: ['action'] },
+            { text: "{Name}, always keep a small amount of local cash hidden in your luggage.", tags: ['clarity'] },
+            { text: "{Name}, try the dish that looks the weirdest. It's usually the most authentic.", tags: ['action'] },
+            { text: "{Name}, take photos, but remember to put the camera down and just observe.", tags: ['clarity'] },
+            { text: "{Name}, solo travel is a profound way to discover who you are.", tags: ['action'] },
+            { text: "{Name}, the fear of missing out (FOMO) is a trap. Be present where you are.", tags: ['comfort'] },
+            { text: "{Name}, travel with a portable power bank. A dead phone is a problem.", tags: ['clarity'] },
+            { text: "{Name}, ask locals for their favorite hidden spot; guidebooks miss the best things.", tags: ['action'] },
+            { text: "{Name}, collect experiences, not souvenirs. The memory is the treasure.", tags: ['clarity'] },
+            { text: "{Name}, if traveling with others, plan for solo time to recharge.", tags: ['comfort'] },
+            { text: "{Name}, write one postcard today and send it to your future self.", tags: ['action'] },
+            { text: "{Name}, when in doubt about packing, leave it out. You can buy almost anything.", tags: ['clarity'] },
+            { text: "{Name}, don't check a bag for trips under seven days. Carry-on is freedom.", tags: ['action'] },
+            { text: "{Name}, travel sickness is real. Pack motion sickness medication just in case.", tags: ['comfort'] },
+            { text: "{Name}, try to eat street food safely. It's often the cheapest and most delicious.", tags: ['action'] },
+            { text: "{Name}, the perfect itinerary doesn't exist. Be flexible and forgiving.", tags: ['clarity'] },
+            { text: "{Name}, remember that the feeling of coming home is part of the joy of travel.", tags: ['comfort'] },
+            { text: "{Name}, always pack earplugs and a sleep mask for flights and noisy hostels.", tags: ['action'] },
+            { text: "{Name}, keep a digital copy of your passport, visa, and insurance online.", tags: ['clarity'] },
+            { text: "{Name}, learn how to say 'thank you' in five different languages.", tags: ['action'] },
+            { text: "{Name}, don't forget to look up. Architecture and nature are often the biggest wonders.", tags: ['comfort'] },
+            { text: "{Name}, use a reusable water bottle to save money and reduce plastic waste.", tags: ['action'] },
+            { text: "{Name}, travel expands the mind because it forces you to question your normal.", tags: ['clarity'] },
+            { text: "{Name}, when bargaining, keep it light and friendly. It’s a game, not a battle.", tags: ['clarity'] },
+            { text: "{Name}, allow yourself a full day of doing absolutely nothing on your trip.", tags: ['comfort'] },
+            { text: "{Name}, buy a local SIM card immediately upon arrival for easy navigation.", tags: ['action'] },
+            { text: "{Name}, be a responsible tourist: respect local customs and dress codes.", tags: ['clarity'] },
+            { text: "{Name}, travel is the best teacher. Embrace the discomfort of learning.", tags: ['clarity'] },
+            { text: "{Name}, remember that travel anxiety is normal. Breathe and take it one step at a time.", tags: ['comfort'] },
+            { text: "{Name}, set aside a specific budget for spontaneous purchases or activities.", tags: ['action'] },
+            { text: "{Name}, download offline maps (Google Maps) before you lose Wi-Fi.", tags: ['action'] },
+            { text: "{Name}, visit a local market or grocery store to understand the culture.", tags: ['clarity'] },
+            { text: "{Name}, the memories you make on the road are worth more than any price tag.", tags: ['comfort'] },
+            { text: "{Name}, research local scams before you go, especially in major tourist cities.", tags: ['clarity'] },
+            { text: "{Name}, pack a tiny first-aid kit with essential pain relievers and bandages.", tags: ['action'] },
+            { text: "{Name}, try Couchsurfing or stay in a local guesthouse for authentic interactions.", tags: ['action'] },
+            { text: "{Name}, don't rely solely on technology. Bring a paperback book and a physical map.", tags: ['clarity'] },
+            { text: "{Name}, the world is fundamentally safe, but caution is always wise.", tags: ['clarity'] },
+            { text: "{Name}, journal your thoughts daily. Travel often changes your perspective rapidly.", tags: ['action'] },
+            { text: "{Name}, when you feel overwhelmed, find a quiet park and recenter yourself.", tags: ['comfort'] },
+            { text: "{Name}, wear layers. Weather changes quickly, especially in new environments.", tags: ['action'] },
+            { text: "{Name}, be open to changing your perception of 'home.'", tags: ['clarity'] },
+            { text: "{Name}, if you see someone struggling, offer help. You never know when you'll need it.", tags: ['action'] },
+                ];
+
+        const GYM_INSIGHTS = [
+            { text: "{Name}, the only bad workout is the one you skipped. Go!", tags: ['action'] },
+            { text: "{Name}, recovery is where muscles grow. Rest is productive.", tags: ['comfort'] },
+            { text: "{Name}, **Consistency beats intensity.** A good 30-minute workout three times a week is better than a monster session once a month.", tags: ['clarity'] },
+            { text: "{Name}, the only bad workout is the one that you skipped. Just show up.", tags: ['action'] },
+            { text: "{Name}, hydration is recovery. Drink water when you wake up, before your workout, and constantly throughout the day.", tags: ['action'] },
+            { text: "{Name}, don't measure progress only by the scale. Track your sleep, energy, and strength.", tags: ['clarity'] },
+            { text: "{Name}, recovery is where muscles grow. Prioritize protein and adequate sleep after strenuous activity.", tags: ['comfort'] },
+            { text: "{Name}, your mindset is your strongest muscle. Convince it you can lift it, and the body will follow.", tags: ['action'] },
+            { text: "{Name}, warm up with movement, not just stretching. Get blood flowing to the muscles you're about to use.", tags: ['action'] },
+            { text: "{Name}, the 'rest' day is when the adaptations happen. Don't skip it.", tags: ['clarity'] },
+            { text: "{Name}, don't compare your Chapter 1 to someone else's Chapter 20. Your journey is yours alone.", tags: ['comfort'] },
+            { text: "{Name}, focus on lifting slightly more or doing one more rep this week (Progressive Overload).", tags: ['action'] },
+            { text: "{Name}, the weight on the bar is irrelevant; the quality of your movement and mind-muscle connection is everything.", tags: ['clarity'] },
+            { text: "{Name}, eat a meal rich in protein and carbs 1-2 hours after your workout.", tags: ['action'] },
+            { text: "{Name}, listen to your body. A tweak or pain is a warning, not a challenge to ignore.", tags: ['comfort'] },
+            { text: "{Name}, mobility work (dynamic stretching) is just as important as the weights.", tags: ['clarity'] },
+            { text: "{Name}, find a workout partner to hold you accountable on the days you don't feel like going.", tags: ['action'] },
+            { text: "{Name}, set one small, measurable fitness goal for the next two weeks.", tags: ['action'] },
+            { text: "{Name}, if you feel drained, a light walk or stretching is better than nothing.", tags: ['comfort'] },
+            { text: "{Name}, remember that fitness is a journey of self-improvement, not self-punishment.", tags: ['clarity'] },
+            { text: "{Name}, try a new type of exercise today: swimming, yoga, or rock climbing.", tags: ['action'] },
+            { text: "{Name}, pre-workout stretches should be dynamic (moving), not static (holding).", tags: ['clarity'] },
+            { text: "{Name}, a good night's sleep is the most powerful performance enhancer.", tags: ['comfort'] },
+            { text: "{Name}, challenge yourself with a bodyweight exercise you've never tried.", tags: ['action'] },
+            { text: "{Name}, master the fundamental movements (squat, hinge, push, pull) before specializing.", tags: ['clarity'] },
+            { text: "{Name}, wear clothes that make you feel good and confident in the gym.", tags: ['comfort'] },
+            { text: "{Name}, keep your chest up and your back straight during squats and deadlifts.", tags: ['clarity'] },
+            { text: "{Name}, log your workouts. Tracking helps you identify plateaus and progress.", tags: ['action'] },
+            { text: "{Name}, don't overcomplicate your diet. Focus on whole foods and adequate protein.", tags: ['clarity'] },
+            { text: "{Name}, if you only have 15 minutes, focus on one major muscle group intensely.", tags: ['action'] },
+            { text: "{Name}, acknowledge how far you've come. You are stronger than you were last year.", tags: ['comfort'] },
+            { text: "{Name}, proper breathing mechanics are vital for core stability during heavy lifts.", tags: ['clarity'] },
+            { text: "{Name}, end your workout with a 5-minute cool-down and static stretch.", tags: ['action'] },
+            { text: "{Name}, find your 'why.' Why are you truly doing this? Reconnect with that reason.", tags: ['clarity'] },
+            { text: "{Name}, schedule your gym time like an important meeting you can't cancel.", tags: ['action'] },
+            { text: "{Name}, the mind gives up long before the body does. Push past the first thought of quitting.", tags: ['action'] },
+            { text: "{Name}, your strength comes from within. You can handle this.", tags: ['comfort'] },
+            { text: "{Name}, try to perform your next set without checking your phone between reps.", tags: ['action'] },
+            { text: "{Name}, understand the difference between muscle soreness (DOMS) and joint pain.", tags: ['clarity'] },
+            { text: "{Name}, foam roll the tightest parts of your body tonight before bed.", tags: ['action'] },
+            { text: "{Name}, slow down the eccentric (lowering) phase of your lifts for better muscle damage.", tags: ['clarity'] },
+            { text: "{Name}, remember that the most successful people treat their health as their highest priority.", tags: ['clarity'] },
+            { text: "{Name}, treat yourself to a new piece of workout gear after hitting a major goal.", tags: ['action'] },
+            { text: "{Name}, drink a glass of water immediately upon waking to start your day hydrated.", tags: ['action'] },
+            { text: "{Name}, compare yourself only to who you were yesterday, not to strangers online.", tags: ['comfort'] },
+            { text: "{Name}, if you are stuck at home, commit to 100 bodyweight squats right now.", tags: ['action'] },
+            { text: "{Name}, use mirrors to check your form, not to check your appearance.", tags: ['clarity'] },
+            { text: "{Name}, remember that exercise is medicine for your mind as well as your body.", tags: ['comfort'] },
+            { text: "{Name}, focus on activating the target muscle before you start the movement.", tags: ['clarity'] },
+            { text: "{Name}, set out your gym clothes the night before to eliminate a barrier to entry.", tags: ['action'] },
+            { text: "{Name}, fitness goals should be specific, measurable, achievable, relevant, and time-bound (SMART).", tags: ['clarity'] },
+            { text: "{Name}, give yourself permission to lower the weight if your form starts to break down.", tags: ['comfort'] },
+                ];
+
+        const ECUADOR_INSIGHTS = [
+            { text: "{Name}, did you know Chimborazo is the closest point to space? Aim high.", tags: ['action'] },
+            { text: "{Name}, Ecuador was the first to give rights to Nature. Respect your environment.", tags: ['clarity'] },
+            { text: "{Name}, Ecuador is the only country in the world named after a geographical feature: the Equator.", tags: ['clarity'] },
+            { text: "{Name}, Mount Chimborazo, Ecuador's highest peak, is technically the point on Earth closest to outer space.", tags: ['clarity'] },
+            { text: "{Name}, Ecuador was the first country in the world to grant constitutional rights to Nature (Pachamama) in 2008.", tags: ['clarity'] },
+            { text: "{Name}, the famous 'Panama Hat' is actually woven in Ecuador, primarily in the city of Montecristi.", tags: ['clarity'] },
+            { text: "{Name}, the official currency is the US Dollar, which was adopted in the year 2000.", tags: ['clarity'] },
+            { text: "{Name}, Ecuador is one of the 17 megadiverse countries, holding more bird species per square kilometer than any other nation.", tags: ['clarity'] },
+            { text: "{Name}, Guinea Pig ('Cuy') is a traditional Andean delicacy, often served whole on special occasions.", tags: ['clarity'] },
+            { text: "{Name}, two UNESCO World Heritage Sites were among the first ever declared: the city of Quito and the Galápagos Islands.", tags: ['clarity'] },
+            { text: "{Name}, the country is a leading global exporter of bananas, flowers, and fine-aroma cacao (Arriba Nacional).", tags: ['clarity'] },
+            { text: "{Name}, in Ecuador, voting is mandatory for citizens between the ages of 18 and 65.", tags: ['clarity'] },
+            { text: "{Name}, the Galápagos Islands are approximately 1,000 km (620 miles) west of the mainland.", tags: ['clarity'] },
+            { text: "{Name}, the 'Middle of the World' (Mitad del Mundo) monument marks where the equator was believed to run, but GPS found the actual line nearby.", tags: ['clarity'] },
+            { text: "{Name}, the Andes mountains run through Ecuador, dividing it into four main geographic regions: Coast, Sierra (Andes), Amazon, and Galápagos.", tags: ['clarity'] },
+            { text: "{Name}, Ecuador is the smallest of the Andean nations.", tags: ['clarity'] },
+            { text: "{Name}, the country has 55 volcanoes, many of which are still active.", tags: ['clarity'] },
+            { text: "{Name}, the Amazonian region, known as the 'Oriente', covers about half the country but is sparsely populated.", tags: ['clarity'] },
+            { text: "{Name}, Quito is the second-highest capital city in the world (after La Paz, Bolivia).", tags: ['clarity'] },
+            { text: "{Name}, Ecuador produces thousands of varieties of potatoes, adapting to its varied microclimates.", tags: ['clarity'] },
+            { text: "{Name}, the national flower is the orchid; Ecuador has over 4,000 native species.", tags: ['clarity'] },
+            { text: "{Name}, 'Fanesca' is a traditional soup consumed only during the Holy Week (Semana Santa).", tags: ['clarity'] },
+            { text: "{Name}, the coastal region is famous for its ceviche and plantain-based dishes.", tags: ['clarity'] },
+            { text: "{Name}, the coastal city of Guayaquil is the largest city and main port.", tags: ['clarity'] },
+            { text: "{Name}, Ecuadorian football (soccer) is a national passion, with the classic rivalry between Barcelona SC and Emelec.", tags: ['clarity'] },
+            { text: "{Name}, 'Pachamama' means 'Mother Earth' in the indigenous Kichwa language.", tags: ['clarity'] },
+            { text: "{Name}, the indigenous population is most concentrated in the Andean Highlands.", tags: ['clarity'] },
+            { text: "{Name}, the most popular spirit is 'Aguardiente,' derived from sugarcane.", tags: ['clarity'] },
+            { text: "{Name}, the capital, Quito, has the largest and best-preserved historical center in Latin America.", tags: ['clarity'] },
+            { text: "{Name}, the official language is Spanish, but Kichwa and Shuar are recognized indigenous languages.", tags: ['clarity'] },
+            { text: "{Name}, the national coat of arms features a condor and the mighty Chimborazo volcano.", tags: ['clarity'] },
+            { text: "{Name}, traditional Ecuadorian music often includes instruments like the zampoña (panpipes) and charango (small lute).", tags: ['clarity'] },
+            { text: "{Name}, the country's time zone is UTC-5 (the same as Eastern Standard Time in the US, but without daylight saving).", tags: ['clarity'] },
+            { text: "{Name}, the 'Devil’s Nose' train ride is one of the most famous and challenging railway tracks in the world.", tags: ['clarity'] },
+            { text: "{Name}, Ecuador's flag colors represent: yellow for the sun and gold, blue for the sky and sea, and red for the blood of the heroes.", tags: ['clarity'] },
+            { text: "{Name}, the city of Cuenca is known for its beautiful colonial architecture and hat industry.", tags: ['clarity'] },
+            { text: "{Name}, nearly 15% of Ecuador's mainland territory is protected through national parks and reserves.", tags: ['clarity'] },
+            { text: "{Name}, the country's national bird is the Andean Condor.", tags: ['clarity'] },
+            { text: "{Name}, a significant earthquake in 2016 severely impacted the country's coast.", tags: ['clarity'] },
+            { text: "{Name}, the famous naturalist Charles Darwin developed his theory of evolution after visiting the Galápagos Islands.", tags: ['clarity'] },
+            { text: "{Name}, the largest indigenous market in South America is held in Otavalo, Ecuador.", tags: ['clarity'] },
+            { text: "{Name}, the country is divided into 24 provinces.", tags: ['clarity'] },
+            { text: "{Name}, the typical Ecuadorian breakfast is often simple, consisting of eggs, cheese, and coffee.", tags: ['clarity'] },
+            { text: "{Name}, the popular soft drink 'Inca Kola' is also consumed in Ecuador, though it originated in Peru.", tags: ['clarity'] },
+            { text: "{Name}, the highest waterfall is the San Rafael Falls, though it has recently been affected by geological changes.", tags: ['clarity'] },
+            { text: "{Name}, the first person from Ecuador to win an Olympic medal was Jefferson Pérez in racewalking.", tags: ['clarity'] },
+            { text: "{Name}, Ecuador is one of the world's most bio-diverse hotspots.", tags: ['clarity'] },
+            { text: "{Name}, the process of making Panama Hats is considered an Intangible Cultural Heritage by UNESCO.", tags: ['clarity'] },
+            { text: "{Name}, the national shield includes a fasces, symbolizing the republic's dignity.", tags: ['clarity'] },
+            { text: "{Name}, the country shares borders with Colombia to the north and Peru to the east and south.", tags: ['clarity'] },
+            { text: "{Name}, a popular street food is 'choclo con queso,' corn with cheese.", tags: ['clarity'] },
+            { text: "{Name}, the coastal region's weather is governed by the warm El Niño current.", tags: ['clarity'] },
+                ];
+
         const INSIGHT_MAP = {
-            'relationships': RELATIONSHIP_INSIGHTS,
-            'career': CAREER_INSIGHTS,
-            'finance': FINANCIAL_INSIGHTS,
-            'travel': TRAVEL_INSIGHTS
+            'relationships': RELATIONSHIP_INSIGHTS, 'career': CAREER_INSIGHTS,
+            'finance': FINANCIAL_INSIGHTS, 'travel': TRAVEL_INSIGHTS,
+            'study': STUDY_INSIGHTS, 'gym': GYM_INSIGHTS, 'ecuador': ECUADOR_INSIGHTS
         };
 
         const CATEGORY_NAMES = {
-            'relationships': 'Relationships',
-            'career': 'Career & Growth',
-            'finance': 'Financial Wisdom',
-            'travel': 'Travel & Adventure'
+            'relationships': 'Relationships', 'career': 'Career',
+            'finance': 'Finance', 'travel': 'Travel',
+            'study': 'Study', 'gym': 'Gym', 'ecuador': 'Ecuador'
         };
 
 
-        // --- 2. CACHED DOM ELEMENTS ---
+        // --- 2. DOM ELEMENTS & State ---
         const cardElement = document.getElementById('insightCard');
         const promptTextElement = document.getElementById('promptText');
         const tipTextElement = document.getElementById('tipText');
@@ -482,139 +729,159 @@
         const nameInput = document.getElementById('nameInput');
         const setupContainer = document.getElementById('setupContainer');
         const categoryContainer = document.getElementById('categoryContainer');
-        const categoryButtons = document.querySelectorAll('.category-button'); // Select all category buttons
+        const moodContainer = document.getElementById('moodContainer');
+        const themeToggle = document.getElementById('themeToggle'); // New
+        
+        const categoryButtons = document.querySelectorAll('.category-button'); 
+        const moodButtons = document.querySelectorAll('.mood-btn'); 
 
         let userName = "Friend"; 
-        let activeInsightsArray = null; 
-        let activeCategory = null; 
+        let activeCategory = 'relationships'; 
+        let activeMood = 'any';
 
         // --- 3. CORE LOGIC ---
+        
+        // New: Theme Toggle Logic
+        function toggleTheme() {
+            const isDarkMode = document.body.classList.toggle('dark-mode');
+            // Update the button icon based on the state
+            themeToggle.textContent = isDarkMode ? '☀️' : '🌙'; 
+
+            // Save the preference to local storage
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+        }
+
+        // Apply theme from local storage on load
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeToggle.textContent = '☀️';
+            } else {
+                 themeToggle.textContent = '🌙';
+            }
+        }
+        
+        function updateCategoryButtons(categoryKey) {
+            categoryButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.category === categoryKey) btn.classList.add('active');
+            });
+        }
+
+        function updateMoodButtons(moodKey) {
+            moodButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.mood === moodKey) btn.classList.add('active');
+            });
+        }
+
+        function getFilteredInsights(categoryKey, moodKey) {
+            const allInsights = INSIGHT_MAP[categoryKey];
+            
+            if (moodKey === 'any') return allInsights;
+
+            const filtered = allInsights.filter(item => {
+                if (typeof item === 'string') return true; 
+                return item.tags && item.tags.includes(moodKey);
+            });
+
+            return filtered.length > 0 ? filtered : allInsights;
+        }
 
         function activateCard() {
             const inputName = nameInput.value.trim();
             userName = inputName || "Friend";
-
-            // Hide name input UI
             setupContainer.style.display = 'none';
-            
-            // Show category buttons
             categoryContainer.classList.add('visible');
+            moodContainer.classList.add('visible');
+            setCategory('relationships'); 
+        }
 
-            // Automatically set the first category as active and reveal the first insight
-            const firstButton = document.querySelector('.category-button');
-            if (firstButton) {
-                setCategory(firstButton.dataset.category);
-            }
+        function setMood(moodKey) {
+            updateMoodButtons(moodKey);
+            activeMood = moodKey;
+            
+            if (cardElement.classList.contains('revealed')) resetCard(true);
         }
         
         function setCategory(categoryKey) {
-            // Check if we are already in the process of resetting or flipping
-            if (cardElement.classList.contains('revealed') || cardElement.classList.contains('flipping')) {
-                // If the card is mid-reveal, force a reset before starting the new category
-                resetCard(true, categoryKey); 
+            updateCategoryButtons(categoryKey);
+
+            if (categoryKey === activeCategory && cardElement.classList.contains('revealed')) {
+                 resetCard(true);
+                 return;
+            } else if (categoryKey === activeCategory && !cardElement.classList.contains('revealed')) {
+                revealInsight();
                 return;
             }
 
-            // Update state variables
             activeCategory = categoryKey;
-            activeInsightsArray = INSIGHT_MAP[categoryKey];
-
-            // Update button visual state
-            categoryButtons.forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.dataset.category === categoryKey) {
-                    btn.classList.add('active');
-                }
-            });
-
-            // Update prompt and prepare for new reveal
             const categoryName = CATEGORY_NAMES[categoryKey];
-            promptTextElement.textContent = `Hello, ${userName}! Click for an Insight on ${categoryName}.`;
+            promptTextElement.textContent = `Hello, ${userName}! Loading...`;
             
-            // Immediately start the flip if a new category is selected
             if (cardElement.classList.contains('revealed')) {
-                 resetCard(true, categoryKey); // Force a reset/reveal if coming from a visible insight
+                 resetCard(true); 
             } else {
                  cardElement.classList.remove('disabled');
-                 revealInsight(); // Start the flip for the first time
+                 revealInsight();
             }
         }
 
         function revealInsight() {
-            if (cardElement.classList.contains('revealed') || !activeInsightsArray) {
-                return;
-            }
+            if (cardElement.classList.contains('revealed')) return;
 
-            // A. Pick a random insight and personalize it
-            const randomIndex = Math.floor(Math.random() * activeInsightsArray.length);
-            let selectedInsight = activeInsightsArray[randomIndex];
-            selectedInsight = personalize(selectedInsight, userName);
+            const availableInsights = getFilteredInsights(activeCategory, activeMood);
 
-            // B. Set the insight content
-            tipTextElement.textContent = selectedInsight;
+            const randomIndex = Math.floor(Math.random() * availableInsights.length);
+            let selectedInsight = availableInsights[randomIndex];
+            
+            let finalText = typeof selectedInsight === 'string' ? selectedInsight : selectedInsight.text;
+            finalText = personalize(finalText, userName);
 
-            // C. Trigger the flip 
+            tipTextElement.textContent = finalText;
             cardElement.classList.add('revealed');
 
-            // D. Show button after the flip transition finishes (0.8s in CSS)
             setTimeout(() => {
                 resetButton.classList.add('visible');
             }, 800);
         }
 
-        function resetCard(forceReveal = true, newCategoryKey = activeCategory) {
+        function resetCard(forceReveal = true) {
             resetButton.classList.remove('visible');
             cardElement.classList.remove('revealed');
             
-            const categoryName = CATEGORY_NAMES[newCategoryKey];
-            promptTextElement.textContent = `Hello, ${userName}! Loading your next Insight on ${categoryName}...`;
+            const categoryName = CATEGORY_NAMES[activeCategory];
+            promptTextElement.textContent = `Hello, ${userName}! Loading...`;
 
-            // Wait for the CSS transition to complete (0.8s)
             setTimeout(() => {
                 tipTextElement.textContent = ""; 
-
-                // If a new category was clicked, update the active state
-                if (newCategoryKey !== activeCategory) {
-                    activeCategory = newCategoryKey;
-                    activeInsightsArray = INSIGHT_MAP[newCategoryKey];
-                }
-                
-                if (forceReveal) {
-                    revealInsight(); 
-                } else {
-                    promptTextElement.textContent = `Hello, ${userName}! Click for an Insight on ${categoryName}.`;
-                }
+                if (forceReveal) revealInsight(); 
+                else promptTextElement.textContent = `Hello, ${userName}! Click for Insight.`;
             }, 800); 
         }
 
-        // --- 4. INITIALIZATION ---
+        // --- 4. INIT ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Card click listener: Only needed for the initial reveal after setting the category
+            loadTheme(); // Load saved theme on startup
+
             cardElement.addEventListener('click', revealInsight);
-            
-            // Start Button handler
             startButton.addEventListener('click', activateCard);
+            themeToggle.addEventListener('click', toggleTheme); // New Listener
             
-            // Category Button handler: Now manages category selection and new insight flow
             categoryButtons.forEach(button => {
-                button.addEventListener('click', (event) => {
-                    const newCategory = event.currentTarget.dataset.category;
-                    setCategory(newCategory);
-                });
+                button.addEventListener('click', (e) => setCategory(e.currentTarget.dataset.category));
             });
 
-            // Reset Button handler: Continues to manage continuous reveal in the same category
-            resetButton.addEventListener('click', () => {
-                resetCard(true, activeCategory);
+            moodButtons.forEach(button => {
+                button.addEventListener('click', (e) => setMood(e.currentTarget.dataset.mood));
             });
+
+            resetButton.addEventListener('click', () => resetCard(true));
             
-            // Handle 'Enter' key press on input
             nameInput.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter') {
-                    activateCard();
-                }
+                if (event.key === 'Enter') activateCard();
             });
-            
             nameInput.focus();
         });
     </script>
