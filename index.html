@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Insight Card: Night Mode & Animations</title>
+    <title>Insight Card: 10 Categories, Clear Moods & Dark Mode</title>
 
     <style>
         /* CSS Variables - Now theme-dependent */
@@ -45,7 +45,7 @@
             min-height: 100vh;
             margin: 20px 0;
             text-align: center;
-            transition: background-color 0.4s, color 0.4s; /* Smooth theme transition */
+            transition: background-color 0.4s, color 0.4s;
         }
 
         h1 {
@@ -55,7 +55,7 @@
             font-weight: 300;
         }
 
-        /* --- THEME TOGGLE BUTTON (NEW) --- */
+        /* --- THEME TOGGLE BUTTON --- */
         #themeToggle {
             position: absolute;
             top: 20px;
@@ -68,7 +68,7 @@
             cursor: pointer;
             font-size: 1.2em;
             transition: all 0.3s;
-            line-height: 1; /* Center the icon */
+            line-height: 1;
         }
 
         #themeToggle:hover {
@@ -77,24 +77,25 @@
         }
         
         /* --- MICRO-ANIMATION FIX (Applies to all clickable elements) --- */
-        .category-button, .mood-btn, .button, #themeToggle {
-            transition: all 0.2s ease-out; /* Standard transition for smooth hover/active states */
+        .category-button, .mood-btn, .button, #themeToggle, .mood-label-container {
+            transition: all 0.2s ease-out;
         }
 
         /* The key micro-animation effect */
         .category-button:active, 
         .mood-btn:active, 
         .button:active,
-        #themeToggle:active {
-            transform: scale(0.95); /* Shrinks slightly when pressed */
-            box-shadow: none !important; /* Removes shadow when pressed down */
+        #themeToggle:active,
+        .mood-label-container:active {
+            transform: scale(0.95);
+            box-shadow: none !important;
         }
         
         /* --- MOOD SELECTOR STYLES --- */
         .mood-container {
             display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
+            gap: 20px;
+            margin-bottom: 25px;
             opacity: 0;
             transition: opacity 0.5s ease-in;
             justify-content: center;
@@ -102,6 +103,13 @@
         
         .mood-container.visible {
             opacity: 1;
+        }
+
+        .mood-label-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
         }
 
         .mood-btn {
@@ -115,20 +123,31 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            position: relative;
+            margin-bottom: 5px; /* Space for the label */
+        }
+
+        .mood-label {
+            font-size: 0.75em;
+            color: var(--text-color);
+            font-weight: 600;
         }
 
         .mood-btn:hover {
             border-color: var(--primary-color);
         }
 
-        .mood-btn.active {
+        .mood-label-container.active .mood-btn {
             background-color: var(--primary-color);
-            color: var(--container-bg-color); /* Light background for the active icon */
+            color: var(--container-bg-color);
             border-color: var(--primary-color);
-            box-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
-            transform: scale(1.1);
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.4);
+            transform: scale(1.05);
         }
+        
+        .mood-label-container.active .mood-label {
+            color: var(--primary-color);
+        }
+
 
         /* --- CATEGORY BUTTONS --- */
         #categoryContainer {
@@ -137,7 +156,7 @@
             justify-content: center;
             gap: 8px;
             margin-bottom: 25px;
-            max-width: 800px;
+            max-width: 900px;
             opacity: 0; 
             transition: opacity 0.5s ease-in;
         }
@@ -156,6 +175,10 @@
             font-size: 0.9em;
             white-space: nowrap;
         }
+        
+        .category-button span {
+            margin-right: 5px; /* Space between icon and text */
+        }
 
         .category-button:hover {
             background-color: var(--revealed-bg-color);
@@ -168,7 +191,7 @@
             border-color: var(--primary-color);
             box-shadow: 0 2px 5px var(--shadow-color);
             font-weight: bold;
-            transform: none !important; /* Prevents :active from overriding the hover state */
+            transform: none !important;
         }
 
         /* --- CARD STYLING --- */
@@ -204,6 +227,7 @@
             align-items: center;
             padding: 20px;
             box-sizing: border-box;
+            flex-direction: column; /* Allows content alignment */
         }
 
         .card-face-front {
@@ -222,6 +246,32 @@
         .card.revealed .card-inner {
             transform: rotateY(180deg);
         }
+        
+        /* --- Spinner Styling (New) --- */
+        .spinner {
+            border: 6px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 6px solid var(--primary-color);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            display: none; /* Hidden by default */
+            margin: 20px auto 0;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .spinner.visible {
+            display: block;
+        }
+        
+        /* Hide prompt text when spinner is visible */
+        .prompt.hidden {
+            visibility: hidden;
+        }
 
         .prompt {
             font-size: 1.3em;
@@ -236,7 +286,7 @@
             line-height: 1.5;
         }
 
-        /* --- Action Buttons --- */
+        /* Action Buttons */
         .button {
             background-color: var(--secondary-color);
             color: var(--container-bg-color);
@@ -249,11 +299,10 @@
         }
 
         .button:hover {
-            background-color: var(--primary-color); /* Use primary on hover */
+            background-color: var(--primary-color);
             transform: translateY(-2px);
         }
         
-        /* Reset Button */
         #resetButton {
             margin-top: 20px;
             opacity: 0;
@@ -268,10 +317,10 @@
 </head>
 <body>
 
-    <button id="themeToggle">🌙</button>
+    <button id="themeToggle" title="Toggle Light/Dark Mode">🌙</button>
 
     <div class="container">
-        <h1>Here are some Insight Cards</h1>
+        <h1>Insight Card</h1>
 
         <div class="input-group" id="setupContainer">
             <input type="text" id="nameInput" placeholder="Enter your name">
@@ -279,26 +328,44 @@
         </div>
 
         <div id="moodContainer" class="mood-container">
-            <button class="mood-btn" data-mood="action" data-label="Motivated">🚀</button>
-            <button class="mood-btn" data-mood="comfort" data-label="Stressed">🧘</button>
-            <button class="mood-btn" data-mood="clarity" data-label="Lost">💡</button>
-            <button class="mood-btn active" data-mood="any" data-label="Any">✨</button>
+            <div class="mood-label-container" data-mood="action" title="Need Motivation">
+                <button class="mood-btn">🚀</button>
+                <span class="mood-label">Action</span>
+            </div>
+            <div class="mood-label-container" data-mood="comfort" title="Feeling Stressed/Anxious">
+                <button class="mood-btn">🧘</button>
+                <span class="mood-label">Comfort</span>
+            </div>
+            <div class="mood-label-container" data-mood="clarity" title="Need Perspective/Direction">
+                <button class="mood-btn">💡</button>
+                <span class="mood-label">Clarity</span>
+            </div>
+            <div class="mood-label-container active" data-mood="any" title="General Insight">
+                <button class="mood-btn">✨</button>
+                <span class="mood-label">Any Mood</span>
+            </div>
         </div>
 
         <div id="categoryContainer">
-            <button class="category-button" data-category="relationships">💖 Relationships</button>
-            <button class="category-button" data-category="career">🚀 Career</button>
-            <button class="category-button" data-category="finance">💰 Finance</button>
-            <button class="category-button" data-category="travel">🌍 Travel</button>
-            <button class="category-button" data-category="study">📚 Study</button>
-            <button class="category-button" data-category="gym">💪 Gym</button>
-            <button class="category-button" data-category="ecuador">🇪🇨 Ecuador</button>
+            <button class="category-button" data-category="relationships"><span>💖</span> Relationships</button>
+            <button class="category-button" data-category="career"><span>💼</span> Career</button>
+            <button class="category-button" data-category="finance"><span>💸</span> Finance</button>
+            <button class="category-button" data-category="travel"><span>✈️</span> Travel</button>
+            <button class="category-button" data-category="study"><span>🎓</span> Study</button>
+            <button class="category-button" data-category="gym"><span>🏋️</span> Fitness</button>
+            
+            <button class="category-button" data-category="selfcare"><span>🧠</span> Self-Care</button>
+            <button class="category-button" data-category="ecuador"><span>🇪🇨</span> EC Facts</button>
+            <button class="category-button" data-category="philippines"><span>🇵🇭</span> PH Facts</button>
+            <button class="category-button" data-category="ecuador_ph"><span>🌎</span> EC & PH Culture</button>
+            <button class="category-button" data-category="ecuador_ph_rel"><span>💘</span> EC/PH Connection</button>
         </div>
 
         <div id="insightCard" class="card disabled">
             <div class="card-inner">
                 <div class="card-face card-face-front">
-                    <p id="promptText" class="prompt">Enter name to start.</p>
+                    <p id="promptText" class="prompt">Enter name to start.</p> 
+                    <div id="loadingSpinner" class="spinner"></div> 
                 </div>
                 <div class="card-face card-face-back">
                     <p id="tipText" class="insight-tip"></p>
@@ -313,14 +380,12 @@
 
 
     <script>
-        // --- 1. CONFIGURATION AND DATA (Using the Object format for Moods) ---
+        // --- 1. CONFIGURATION AND DATA ---
 
         const personalize = (insight, name) => {
             let text = typeof insight === 'string' ? insight : insight.text;
             return text.replace("{Name}", name);
         };
-
-        /* DATA STRUCTURES (KEEP YOUR FULL 50 INSIGHTS HERE) */
 
         const RELATIONSHIP_INSIGHTS = [
             { text: "{Name}, always choose curiosity over judgment.", tags: ['clarity'] },
@@ -706,17 +771,239 @@
             { text: "{Name}, a popular street food is 'choclo con queso,' corn with cheese.", tags: ['clarity'] },
             { text: "{Name}, the coastal region's weather is governed by the warm El Niño current.", tags: ['clarity'] },
                 ];
+        
+        const SELFCARE_INSIGHTS = [
+            { text: "{Name}, self-care is not selfish. It's the fuel that lets you help others.", tags: ['clarity'] },
+            { text: "{Name}, you are not your thoughts. Observe them without judgment.", tags: ['comfort'] },
+            { text: "{Name}, spend 10 minutes writing down three things you accomplished today, no matter how small.", tags: ['action'] },
+            { text: "{Name}, set aside 15 minutes to do something just for fun, with no goal attached.", tags: ['action'] },
+            { text: "{Name}, emotional boundaries are vital. Learn to say 'no' without guilt.", tags: ['clarity'] },
+            { text: "{Name}, practice the 5-4-3-2-1 grounding technique when anxiety spikes.", tags: ['action'] },
+            { text: "{Name}, compare yourself only to who you were yesterday, not to others.", tags: ['comfort'] },
+            { text: "{Name}, stop 'should-ing' yourself. Replace 'I should be doing X' with 'I choose to do Y'.", tags: ['clarity'] },
+            { text: "{Name}, take three slow, deep breaths right now. Inhale for 4, hold for 4, exhale for 6.", tags: ['comfort'] },
+            { text: "{Name}, sunlight on your face, a few minutes of fresh air: simple actions change your mood.", tags: ['action'] },
+            { text: "{Name}, remember that failure is information, not identity. Learn and move on.", tags: ['clarity'] },
+            { text: "{Name}, clutter in your space often reflects clutter in your mind. Tidy up one area.", tags: ['action'] },
+            { text: "{Name}, prioritize sleep tonight. It's the most powerful recovery tool you have.", tags: ['comfort'] },
+            { text: "{Name}, social media detox: commit to a one-hour break from all scrolling today.", tags: ['action'] },
+            { text: "{Name}, ask yourself: 'Is this thought helpful, or is it just noise?'", tags: ['clarity'] },
+            { text: "{Name}, when you feel overwhelmed, try the 'brain dump'—write everything down until the page is empty.", tags: ['action'] },
+            { text: "{Name}, perfectionism is often a form of self-sabotage. Aim for 'done' over 'perfect'.", tags: ['clarity'] },
+            { text: "{Name}, hydrate! Dehydration affects mood and focus more than you think.", tags: ['comfort'] },
+            { text: "{Name}, spend five minutes stretching or rolling out a tight muscle group.", tags: ['action'] },
+            { text: "{Name}, forgive yourself for a mistake you made this week. It's done.", tags: ['comfort'] },
+            { text: "{Name}, challenge your inner critic. Would you speak to a friend that way?", tags: ['clarity'] },
+            { text: "{Name}, schedule leisure time *before* work starts to guarantee you relax.", tags: ['action'] },
+            { text: "{Name}, remember your limits. Overextending yourself helps no one in the long run.", tags: ['comfort'] },
+            { text: "{Name}, try journaling for five minutes. Write freely without censoring yourself.", tags: ['action'] },
+            { text: "{Name}, focus on what is within your control, and release the rest.", tags: ['clarity'] },
+            { text: "{Name}, move your body. Even a short walk releases endorphins and reduces stress.", tags: ['action'] },
+            { text: "{Name}, be mindful of your input: choose books, shows, and news that uplift you.", tags: ['clarity'] },
+            { text: "{Name}, you don't have to be productive all the time. Rest is productive.", tags: ['comfort'] },
+            { text: "{Name}, write a short letter of gratitude to someone who impacted your life.", tags: ['action'] },
+            { text: "{Name}, recognize the difference between solitude (healing) and isolation (harmful).", tags: ['clarity'] },
+            { text: "{Name}, when doubt creeps in, list three past successes you overcame.", tags: ['comfort'] },
+            { text: "{Name}, treat yourself to a small, non-food-related reward today.", tags: ['action'] },
+            { text: "{Name}, practice body neutrality: appreciate what your body *does*, not just how it looks.", tags: ['clarity'] },
+            { text: "{Name}, let go of the need to control outcomes. Focus on effort and intention.", tags: ['comfort'] },
+            { text: "{Name}, drink a full glass of water immediately after you finish reading this.", tags: ['action'] },
+            { text: "{Name}, listen to your favorite childhood song to instantly boost your mood.", tags: ['comfort'] },
+            { text: "{Name}, when feeling low, get up and change your physical location in the room.", tags: ['action'] },
+            { text: "{Name}, the goal is not to eliminate stress, but to learn how to recover from it.", tags: ['clarity'] },
+            { text: "{Name}, schedule a technology 'sunset': stop using screens one hour before bed.", tags: ['action'] },
+            { text: "{Name}, simplify your life. What one commitment can you eliminate this week?", tags: ['clarity'] },
+            { text: "{Name}, remember that 'good enough' is often perfect. You don't need to overdeliver.", tags: ['comfort'] },
+            { text: "{Name}, light a candle or use an essential oil (like lavender) to create a calm space.", tags: ['action'] },
+            { text: "{Name}, if you are struggling, reach out to a professional therapist or counselor.", tags: ['clarity'] },
+            { text: "{Name}, take your vitamins and supplements consistently. Small health habits matter.", tags: ['action'] },
+            { text: "{Name}, anxiety is anticipating future events. Bring your focus back to the present moment.", tags: ['clarity'] },
+            { text: "{Name}, remember that sadness is a temporary visitor, not a permanent resident.", tags: ['comfort'] },
+            { text: "{Name}, put on an outfit that makes you feel confident, even if you stay home.", tags: ['action'] },
+            { text: "{Name}, practice 'pivoting': when a negative thought appears, consciously choose a positive counter-thought.", tags: ['action'] },
+            { text: "{Name}, be your own best friend. Treat yourself with the same compassion you show others.", tags: ['comfort'] },
+            { text: "{Name}, focus on one small, restorative task, like painting your nails or tending a plant.", tags: ['action'] },
+        ];
+        
+       const PHILIPPINES_INSIGHTS = [
+            { text: "{Name}, the Philippines is the second-largest archipelago globally, consisting of around 7,641 islands. Choose to explore something new today.", tags: ['clarity', 'action'] },
+            { text: "{Name}, the country has the longest coastline among all nations, often leading to beautiful hidden beaches. Give yourself permission to rest by the 'shore.'", tags: ['comfort'] },
+            { text: "{Name}, the Philippines is named after King Philip II of Spain, reflecting a deep, complex history.", tags: ['clarity'] },
+            { text: "{Name}, **Jeepneys** (decorated World War II jeeps) are the most popular form of public transportation. Find a way to share your journey today.", tags: ['action'] },
+            { text: "{Name}, the 'Bayani' (hero) spirit is about collective strength. Remember you don't have to carry your burdens alone; seek community support.", tags: ['comfort'] },
+            { text: "{Name}, **Bayanihan** is the spirit of communal unity, work, and cooperation. Seek community support today.", tags: ['action'] },
+            { text: "{Name}, the country is one of the world's most vulnerable to climate change, requiring adaptability and resilience. Practice being flexible today.", tags: ['clarity'] },
+            { text: "{Name}, try to practice some Tagalog today. Even 'salamat po' (thank you) can go a long way in showing respect.", tags: ['action'] },
+            { text: "{Name}, the national martial art is called Eskrima or Kali, focusing on weapon-based fighting. Protect your boundaries fiercely.", tags: ['clarity'] },
+            { text: "{Name}, the Philippine national animal is the Carabao (water buffalo), symbolizing patience and diligence. Be patient with your progress.", tags: ['comfort'] },
+            { text: "{Name}, the famous Banaue Rice Terraces are often called the 'Eighth Wonder of the World,' built primarily by hand.", tags: ['clarity'] },
+            { text: "{Name}, the Philippines is the only predominantly Christian nation in Asia.", tags: ['clarity'] },
+            { text: "{Name}, over 170 distinct languages are spoken across the islands, with Tagalog (Filipino) as the national language.", tags: ['clarity'] },
+            { text: "{Name}, **Halo-Halo** (mix-mix) is the favorite dessert, a perfect blend of sweet, cold, and varied ingredients. Embrace the mix of life's experiences.", tags: ['comfort'] },
+            { text: "{Name}, the country is the largest producer of coconuts globally. Use a coconut oil product today for natural self-care.", tags: ['action'] },
+            { text: "{Name}, **Mano Po** is a gesture of respect, where the younger person presses an elder's hand to their forehead. Show respect to an elder today.", tags: ['action'] },
+            { text: "{Name}, the national flower is the Sampaguita, symbolizing purity, simplicity, and humility. Be humble in your success.", tags: ['clarity'] },
+            { text: "{Name}, the 'Malong' is a traditional tubular garment that can be worn in many ways. Find one item in your life that is versatile and use it creatively.", tags: ['action'] },
+            { text: "{Name}, the Philippine Eagle is one of the largest and most powerful forest raptors in the world. Be powerful in your convictions.", tags: ['clarity'] },
+            { text: "{Name}, the country has a rich tradition of folk dances, many imitating the movements of birds and animals. Find a way to move your body joyfully.", tags: ['action'] },
+            { text: "{Name}, the concept of **Utang na Loob** (debt of gratitude) is central to Philippine social life. Pay it forward today.", tags: ['action'] },
+            { text: "{Name}, the Philippines is part of the Pacific 'Ring of Fire,' experiencing frequent earthquakes and volcanic activity. Be prepared, but don't live in fear.", tags: ['clarity'] },
+            { text: "{Name}, the national bird is the Philippine Eagle, known for being critically endangered. Speak up for something you care about today.", tags: ['action'] },
+            { text: "{Name}, **Tarsiers** (in Bohol) are among the world's smallest primates, known for their huge eyes. Pay close attention to details today.", tags: ['clarity'] },
+            { text: "{Name}, **Adobo** is often considered the national dish, defined by the balance of vinegar, soy sauce, garlic, and peppercorns. Seek balance in your life.", tags: ['clarity'] },
+            { text: "{Name}, the traditional Filipino home, the 'Bahay Kubo,' is made of natural materials like bamboo and nipa. Find simplicity in your surroundings.", tags: ['comfort'] },
+            { text: "{Name}, the longest river is the Cagayan River. Don't be afraid of the long journey ahead; just keep moving.", tags: ['comfort'] },
+            { text: "{Name}, the concept of **Hiya** (shame or saving face) guides social interactions. Be thoughtful about how your actions affect others.", tags: ['clarity'] },
+            { text: "{Name}, traditional folk healers are called 'albularyo,' often using herbs and prayer. Trust your own body's ability to heal.", tags: ['comfort'] },
+            { text: "{Name}, the Philippines is a global leader in business process outsourcing (BPO). Focus on mastering a single process today.", tags: ['action'] },
+            { text: "{Name}, the word **Kain Na** means 'let's eat' and is a warm invitation. Share a meal with someone you care about.", tags: ['action'] },
+            { text: "{Name}, the country is incredibly resilient, often rebuilding quickly after typhoons. You, too, have incredible resilience.", tags: ['comfort'] },
+            { text: "{Name}, the rice terraces are over 2,000 years old, proving that commitment over time yields great results. Be committed to your long-term goals.", tags: ['clarity'] },
+            { text: "{Name}, the capital, Manila, is a bustling, vibrant metropolis. Embrace the energy around you today.", tags: ['action'] },
+            { text: "{Name}, the Philippines is a major source of nurses and health professionals globally. Dedicate yourself to serving others today.", tags: ['action'] },
+            { text: "{Name}, **Lechon** (roast pig) is the ultimate celebratory dish. Celebrate a small win today.", tags: ['comfort'] },
+            { text: "{Name}, the Philippine national hero, Jose Rizal, was a polymath who inspired the nation through his writing.", tags: ['clarity'] },
+            { text: "{Name}, the traditional women's dress is the **Baro’t Saya**, known for its beautiful butterfly sleeves. Embrace elegance and formality when needed.", tags: ['action'] },
+            { text: "{Name}, the Filipino diaspora is one of the largest worldwide, connecting the islands to every continent.", tags: ['clarity'] },
+            { text: "{Name}, try adding calamansi (Philippine lime) to your water today for a citrus boost. Small changes can energize you.", tags: ['action'] },
+            { text: "{Name}, the **Simbang Gabi** (Night Mass) is a devotional nine-day series of masses leading up to Christmas.", tags: ['clarity'] },
+            { text: "{Name}, Filipinos are famous for their hospitality; guests are treated like royalty. Be a gracious host today.", tags: ['action'] },
+            { text: "{Name}, when greeting someone, a slight bow is often used as a sign of respect. Be humble and deferential.", tags: ['clarity'] },
+            { text: "{Name}, the country holds one of the longest Christmas seasons in the world, starting in September. Embrace joy early.", tags: ['comfort'] },
+            { text: "{Name}, the **Parol** (Christmas lantern) symbolizes the Star of Bethlehem. Focus on the light and guidance in your life.", tags: ['clarity'] },
+            { text: "{Name}, the Philippine Sea is the largest marginal sea in the world. Dive into your own vast potential.", tags: ['clarity'] },
+            { text: "{Name}, the **Rattan** palm is used extensively in furniture, symbolizing durability and strength. Be durable in your resolve.", tags: ['comfort'] },
+            { text: "{Name}, the Philippine flag is unique; the red stripe is placed on top during wartime, and blue during peacetime. Know when to fight and when to rest.", tags: ['clarity'] },
+            { text: "{Name}, **Tubbataha Reef** is a UNESCO site, one of the world's best diving spots. Take the plunge on an intimidating task today.", tags: ['action'] },
+            { text: "{Name}, the phrase **Bahala Na** means 'Come what may' or 'Leave it up to God.' After preparation, let go of the worry.", tags: ['comfort'] },
+        ];
+
+        const ECUADOR_PH_INSIGHTS = [
+            { text: "{Name}, Ecuador and the Philippines share strong Spanish Catholic colonial roots, influencing both family structure and festivals. Find beauty in the shared history.", tags: ['clarity'] },
+            { text: "{Name}, both cultures value strong, extended family ties above individualism. Lean on your family today; they are your foundation.", tags: ['comfort'] },
+            { text: "{Name}, a love for singing is common! Whether it's Karaoke in PH or a guitar in EC, music connects. Put on some uplifting music right now.", tags: ['action'] },
+            { text: "{Name}, both nations share a high level of patience and adaptability due to frequent natural events (volcanoes/typhoons). You are built for resilience.", tags: ['comfort'] },
+            { text: "{Name}, the concept of 'siesta' or midday rest exists in both, though less formal now. Take a quiet, focused break from screens.", tags: ['action'] },
+            { text: "{Name}, both countries have a massive and vital community of Overseas Workers (OFWs/Ecuadorians abroad). Remember their sacrifices and drive.", tags: ['clarity'] },
+            { text: "{Name}, food is a primary love language. Learn one food similarity: both cultures use rice as a staple, but their preparations vary widely.", tags: ['action'] },
+            { text: "{Name}, direct criticism is often avoided in both cultures (Hiya in PH, respect for 'face' in EC). Focus on indirect, gentle communication.", tags: ['clarity'] },
+            { text: "{Name}, both are considered part of the 17 'megadiverse' countries, rich in unique flora and fauna. Celebrate the beauty of nature today.", tags: ['comfort'] },
+            { text: "{Name}, both cultures share a vibrant, colorful aesthetic in clothing, art, and public transportation (Jeepneys/Buses). Find the color in your day.", tags: ['clarity'] },
+            { text: "{Name}, the importance of godparents ('Padrinos' in EC, 'Ninongs/Ninangs' in PH) highlights the commitment to community support. Reach out to a mentor.", tags: ['action'] },
+            { text: "{Name}, Catholicism deeply influences both nations' holidays; the commitment to family during Christmas and Holy Week is central.", tags: ['clarity'] },
+            { text: "{Name}, hospitality is an unspoken rule. If you receive a guest, you must feed them well! Be generous with your time today.", tags: ['action'] },
+            { text: "{Name}, the use of affectionate titles ('Kuya' or 'Ate' in PH, 'Mijita' or 'Mijo' in EC) shows respect and closeness. Use kind words today.", tags: ['comfort'] },
+            { text: "{Name}, both flags prominently feature red, white, and blue, symbols inherited from their independence struggles.", tags: ['clarity'] },
+            { text: "{Name}, a strong entrepreneurial spirit drives both nations' economies, from street food stalls to global exports. Pursue your small idea today.", tags: ['action'] },
+            { text: "{Name}, the concept of **Mañana** (later) in EC and **Filipino Time** highlights a more relaxed approach to time than Western cultures. Don't rush your process.", tags: ['comfort'] },
+            { text: "{Name}, both countries have regions dedicated to specific crafts: hats in Cuenca (EC) and textiles in Ifugao (PH). Respect the mastery of others.", tags: ['clarity'] },
+            { text: "{Name}, the shared history of colonization means both nations have complex, mixed national identities. Understand that complexity is strength.", tags: ['clarity'] },
+            { text: "{Name}, traditional folk remedies and herbal medicine are still valued alongside Western medicine. Trust your instincts on self-care.", tags: ['comfort'] },
+            { text: "{Name}, both populations have a strong emphasis on education as a path to a better future. Commit to learning one new thing today.", tags: ['action'] },
+            { text: "{Name}, dancing is central to social life—from the Salsa/Cumbia in EC to the folk dances in PH. Find time to move and express joy.", tags: ['action'] },
+            { text: "{Name}, corruption is a recognized challenge in both nations. Be a voice for integrity and honesty today.", tags: ['clarity'] },
+            { text: "{Name}, in both cultures, when visiting, it's customary to bring a small gift (a Pasalubong or detail). Prepare a thoughtful gift for someone.", tags: ['action'] },
+            { text: "{Name}, the love for basketball (PH) and soccer (EC) shows a passion for team sports. Know when to lead and when to be a team player.", tags: ['clarity'] },
+            { text: "{Name}, both nations face the challenge of preserving indigenous languages and traditions. Celebrate diversity today.", tags: ['clarity'] },
+            { text: "{Name}, the street food culture is vibrant and social in both Quito and Manila. Take a pause to enjoy something simple and flavorful.", tags: ['comfort'] },
+            { text: "{Name}, the majority of the population in both countries are young, driving innovation and change. Embrace the energy of youth.", tags: ['action'] },
+            { text: "{Name}, both cultures share beautiful and tragic history, often reflected in passionate art and music. Allow yourself to feel deeply.", tags: ['comfort'] },
+            { text: "{Name}, both nations' independence days are major, patriotic celebrations. Reflect on your own freedom and independence.", tags: ['clarity'] },
+            { text: "{Name}, sharing is fundamental. In both cultures, food is never finished until everyone has had enough. Be generous with your resources.", tags: ['action'] },
+            { text: "{Name}, the volcanoes in EC and the typhoons in PH remind us that nature is powerful. Respect the forces you cannot control.", tags: ['clarity'] },
+            { text: "{Name}, both cultures value respect for formal titles and professional hierarchies. Know who the decision-makers are and address them formally.", tags: ['action'] },
+            { text: "{Name}, the warmth of the people often masks deep-seated economic struggles. Be mindful and compassionate.", tags: ['clarity'] },
+            { text: "{Name}, both nations are home to some of the world's finest coffee and cocoa/cacao. Savor a slow, mindful cup today.", tags: ['comfort'] },
+            { text: "{Name}, family gatherings often revolve around abundant, delicious meals—a feast. Plan a relaxing family gathering soon.", tags: ['action'] },
+            { text: "{Name}, the older generation in both nations often speaks Spanish, bridging a colonial language connection.", tags: ['clarity'] },
+            { text: "{Name}, both cultures are incredibly welcoming to foreigners, viewing hospitality as a point of national pride. Be welcoming to strangers.", tags: ['action'] },
+            { text: "{Name}, the Catholic tradition of the 'novena' (nine days of prayer) is common in both. Commit to nine days of a new positive habit.", tags: ['action'] },
+            { text: "{Name}, funerals are often large, social affairs lasting days, reflecting the deep value of community support in grief. Let yourself be supported.", tags: ['comfort'] },
+            { text: "{Name}, both nations value personal appearance and presentation highly. Dress with care today.", tags: ['action'] },
+            { text: "{Name}, the use of diminutive suffixes (like '-ito' or '-ita' in EC) and affectionate nicknames (in PH) creates a loving environment.", tags: ['comfort'] },
+            { text: "{Name}, both national anthems evoke strong, emotional patriotism. Be proud of your heritage.", tags: ['clarity'] },
+            { text: "{Name}, the influence of American culture (especially movies and music) is significant in both, particularly among the youth.", tags: ['clarity'] },
+            { text: "{Name}, the value placed on respecting one's ancestors is high. Reflect on the wisdom passed down to you.", tags: ['comfort'] },
+            { text: "{Name}, both societies often rely on community and social connections to find jobs and opportunities. Network today.", tags: ['action'] },
+            { text: "{Name}, the sheer variety of regional foods in both countries means there is always something new to try. Be open to new experiences.", tags: ['action'] },
+            { text: "{Name}, the concept of enduring hardship with a smile is strong in both. Find a reason to smile even during a tough moment.", tags: ['comfort'] },
+            { text: "{Name}, both nations have a high regard for beauty pageants and cultural festivals. Celebrate beauty and culture today.", tags: ['clarity'] },
+            { text: "{Name}, the family unit often doubles as a financial support system. Be supportive of a family member's goal.", tags: ['action'] },
+        ];
+
+        const ECUADOR_PH_REL_INSIGHTS = [
+            { text: "{Name}, the quickest way to a Filipino's heart is compliments, and an Ecuadorian's is attention. Double your effort today.", tags: ['action'] },
+            { text: "{Name}, the concept of **ligaw** (courting) in the PH is traditional; the directness in EC is modern. Find a balance that respects both cultures.", tags: ['clarity'] },
+            { text: "{Name}, the EC side might appreciate spontaneous plans. The PH side might value a confirmed schedule. Plan a date, but allow for a surprise ending.", tags: ['action'] },
+            { text: "{Name}, a Filipino partner's smile (ngiti) is pure magic; an Ecuadorian partner's intensity (mirada) is captivating. Tell them what you noticed.", tags: ['action'] },
+            { text: "{Name}, Your Filipino crush might be reserved, but they noticed you noticing them. Make eye contact and hold it for a few seconds.", tags: ['action'] },
+            { text: "{Name},The Ecuadorian knows what they want. Stop waiting for the perfect moment. Ask them to *do* something, not just talk.", tags: ['action'] },
+            { text: "{Name}, remember that both cultures value respect above all. Be charming, but never disrespectful, especially when meeting their friends.", tags: ['clarity'] },
+            { text: "{Name}, food is foreplay. Learn the names of two dishes they love (e.g., adobo, encebollado) and offer to cook/order one.", tags: ['action'] },
+            { text: "{Name}, in the early stages, both sides are testing your **sinceridad** (sincerity). Keep your promises, even the small ones.", tags: ['clarity'] },
+            { text: "{Name}, a Filipino's family is their universe. An Ecuadorian's friends are their chosen family. Show genuine interest in their inner circle.", tags: ['action'] },
+            { text: "{Name},  That slight delay in texting isn't shyness—it's anticipation. Send a confident follow-up that demands a yes/no answer.", tags: ['action'] },
+            { text: "{Name}, to an Ecuadorian, a compliment about their intelligence or passion is gold. To a Filipino, a compliment on their hospitality is key. Focus on their core values.", tags: ['clarity'] },
+            { text: "{Name}, the PH side might be used to group dates. The EC side might prefer one-on-one time. Suggest a small, intimate setting next time.", tags: ['action'] },
+            { text: "{Name}, use music to bridge the gap: play some Cumbia (EC) and some OPM (PH). Ask them to teach you to dance to one.", tags: ['action'] },
+            { text: "{Name}, the **chismis** (gossip) is real in both communities. Be impeccable with your word to avoid drama.", tags: ['clarity'] },
+            { text: "{Name}, a small, genuine gift—not expensive, but thoughtful—speaks volumes in both cultures. A single flower or their favorite snack.", tags: ['action'] },
+            { text: "{Name}, They want to see your confident side. Send a late-night text that only they would understand—private and tempting.", tags: ['action'] },
+            { text: "{Name}, ask your crush about the best **fiesta** (festival) in their hometown. Show them you want to know their roots.", tags: ['clarity'] },
+            { text: "{Name}, remember that in a dating context, their family may be observing you from afar. Be consistently good, even when you think you're alone.", tags: ['clarity'] },
+            { text: "{Name}, the Ecuadorian may be bolder with compliments, the Filipino with service. Appreciate their love language, whatever form it takes.", tags: ['comfort'] },
+            { text: "{Name},  That long, slow handshake (or lingering hug) is not just friendliness. Repeat the contact and add a smile.", tags: ['action'] },
+            { text: "{Name}, emotional clarity is key to avoid mixed signals. If you like them, say it clearly: 'I enjoy spending time with you.'", tags: ['clarity'] },
+            { text: "{Name}, when talking, make sure to ask questions that go beyond the surface: 'What's one thing that makes you proud of your country?'", tags: ['action'] },
+            { text: "{Name}, use Spanish (EC) and English/Taglish (PH) to flirt. A playful language barrier is part of the fun. Try calling them 'Mi Amor' (EC) or 'Mahal' (PH) playfully.", tags: ['action'] },
+            { text: "{Name}, be the safe space where they can complain about something without having to immediately 'save face' or be 'nice.'", tags: ['comfort'] },
+            { text: "{Name},  Confidence is sexy in both cultures. Decide where you're going tonight, text them the plan, and tell them to be ready.", tags: ['action'] },
+            { text: "{Name}, Filipinos often use humor (kulitan) to test boundaries. Ecuadorians use light teasing. Learn to tease back playfully.", tags: ['clarity'] },
+            { text: "{Name}, if they accept your spontaneous invitation, they are interested. If they offer an alternative, they are *definitely* interested. Proceed with confidence.", tags: ['clarity'] },
+            { text: "{Name}, understand that in both cultures, time spent together is the currency of affection. Offer your time freely.", tags: ['action'] },
+            { text: "{Name}, remember that a true **Filipina** or **Ecuadorian** partner is looking for a blend of romance and stability. Show both sides of yourself.", tags: ['clarity'] },
+            { text: "{Name},  Forget small talk. Ask them what their biggest dream is and tell them why you think they can achieve it. Connect deeply.", tags: ['action'] },
+            { text: "{Name}, if they invite you to their home, even briefly, dress neatly and bring something small for the family. Respect is attractive.", tags: ['action'] },
+            { text: "{Name}, let go of the pressure to be 'perfect.' Both cultures appreciate authenticity and a sense of humor about one's flaws.", tags: ['comfort'] },
+            { text: "{Name}, learn one term of endearment from their language (e.g., 'corazón' or 'beh') and use it once, lightly, to gauge their reaction.", tags: ['action'] },
+            { text: "{Name}, the hardest part is getting started. Send the first text right now. It can be a simple, 'Thinking of you.'", tags: ['action'] },
+            { text: "{Name}, if you get shy, remember that they are just as nervous and excited as you are. Breathe and smile.", tags: ['comfort'] },
+            { text: "{Name}, They want to know you are serious. Make a confident plan for your next date and block it out on your calendar *with them*.", tags: ['action'] },
+            { text: "{Name}, remember that your unique background is an asset, not an obstacle. Share a story from your own childhood proudly.", tags: ['clarity'] },
+            { text: "{Name}, be consistent with your communication. Ghosting is deeply disrespectful in both cultures and sends the wrong message.", tags: ['clarity'] },
+            { text: "{Name}, the joy of dating is the discovery. Approach every conversation with the curiosity of a traveler.", tags: ['clarity'] },
+            { text: "{Name}, Compliment their energy, not just their looks. Say, 'I love how you light up the room.'", tags: ['action'] },
+            { text: "{Name}, don't rely on stereotypes. Let them introduce you to their culture through their own eyes and experiences.", tags: ['clarity'] },
+            { text: "{Name}, if they are stressed, offer comfort through a shared, simple action: a walk, a coffee, or just silence together.", tags: ['comfort'] },
+            { text: "{Name}, plan a fun competition: a game of chess, a card game, or karaoke. Shared excitement builds chemistry.", tags: ['action'] },
+            { text: "{Name},  When you say goodnight, make sure the text leaves them smiling and anticipating your next meeting.", tags: ['action'] },
+            { text: "{Name}, the hardest part of a new relationship is vulnerability. Share one small, genuine fear or hope with them today.", tags: ['comfort'] },
+            { text: "{Name}, if you are meeting their friends, offer a genuine compliment about how great their friend group is. It reflects well on them.", tags: ['action'] },
+            { text: "{Name}, remember that a love built on two cultures is stronger because it has two worlds of experience. Embrace your luck.", tags: ['comfort'] },
+            { text: "{Name}, Instead of asking 'What are you doing?' try 'I need a partner for a spontaneous adventure. Are you in?'", tags: ['action'] },
+            { text: "{Name}, focus on the present moment. Don't worry about marriage on the first date. Enjoy the initial spark, {Name}.", tags: ['comfort'] },
+        ];
 
         const INSIGHT_MAP = {
             'relationships': RELATIONSHIP_INSIGHTS, 'career': CAREER_INSIGHTS,
             'finance': FINANCIAL_INSIGHTS, 'travel': TRAVEL_INSIGHTS,
-            'study': STUDY_INSIGHTS, 'gym': GYM_INSIGHTS, 'ecuador': ECUADOR_INSIGHTS
+            'study': STUDY_INSIGHTS, 'gym': GYM_INSIGHTS, 
+            'selfcare': SELFCARE_INSIGHTS, 
+            'ecuador': ECUADOR_INSIGHTS, 
+            'philippines': PHILIPPINES_INSIGHTS, 
+            'ecuador_ph': ECUADOR_PH_INSIGHTS, 
+            'ecuador_ph_rel': ECUADOR_PH_REL_INSIGHTS 
         };
 
         const CATEGORY_NAMES = {
             'relationships': 'Relationships', 'career': 'Career',
             'finance': 'Finance', 'travel': 'Travel',
-            'study': 'Study', 'gym': 'Gym', 'ecuador': 'Ecuador'
+            'study': 'Study', 'gym': 'Fitness',
+            'selfcare': 'Self-Care',
+            'ecuador': 'EC Facts',
+            'philippines': 'PH Facts',
+            'ecuador_ph': 'EC & PH Culture',
+            'ecuador_ph_rel': 'EC/PH Connection'
         };
 
 
@@ -724,16 +1011,17 @@
         const cardElement = document.getElementById('insightCard');
         const promptTextElement = document.getElementById('promptText');
         const tipTextElement = document.getElementById('tipText');
+        const loadingSpinner = document.getElementById('loadingSpinner'); // New Spinner Element
         const resetButton = document.getElementById('resetButton');
         const startButton = document.getElementById('startButton');
         const nameInput = document.getElementById('nameInput');
         const setupContainer = document.getElementById('setupContainer');
         const categoryContainer = document.getElementById('categoryContainer');
         const moodContainer = document.getElementById('moodContainer');
-        const themeToggle = document.getElementById('themeToggle'); // New
+        const themeToggle = document.getElementById('themeToggle'); 
         
         const categoryButtons = document.querySelectorAll('.category-button'); 
-        const moodButtons = document.querySelectorAll('.mood-btn'); 
+        const moodContainers = document.querySelectorAll('.mood-label-container'); 
 
         let userName = "Friend"; 
         let activeCategory = 'relationships'; 
@@ -741,13 +1029,11 @@
 
         // --- 3. CORE LOGIC ---
         
-        // New: Theme Toggle Logic
+        // Theme Toggle Logic
         function toggleTheme() {
             const isDarkMode = document.body.classList.toggle('dark-mode');
-            // Update the button icon based on the state
             themeToggle.textContent = isDarkMode ? '☀️' : '🌙'; 
-
-            // Save the preference to local storage
+            themeToggle.title = isDarkMode ? 'Toggle Light Mode' : 'Toggle Dark Mode';
             localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
         }
 
@@ -757,8 +1043,10 @@
             if (savedTheme === 'dark') {
                 document.body.classList.add('dark-mode');
                 themeToggle.textContent = '☀️';
+                themeToggle.title = 'Toggle Light Mode';
             } else {
                  themeToggle.textContent = '🌙';
+                 themeToggle.title = 'Toggle Dark Mode';
             }
         }
         
@@ -770,14 +1058,14 @@
         }
 
         function updateMoodButtons(moodKey) {
-            moodButtons.forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.dataset.mood === moodKey) btn.classList.add('active');
+            moodContainers.forEach(container => {
+                container.classList.remove('active');
+                if (container.dataset.mood === moodKey) container.classList.add('active');
             });
         }
 
         function getFilteredInsights(categoryKey, moodKey) {
-            const allInsights = INSIGHT_MAP[categoryKey];
+            const allInsights = INSIGHT_MAP[categoryKey] || [];
             
             if (moodKey === 'any') return allInsights;
 
@@ -788,6 +1076,18 @@
 
             return filtered.length > 0 ? filtered : allInsights;
         }
+        
+        // Helper function to show/hide the spinner and prompt
+        function setCardLoading(isLoading) {
+            if (isLoading) {
+                promptTextElement.classList.add('hidden');
+                loadingSpinner.classList.add('visible');
+            } else {
+                promptTextElement.classList.remove('hidden');
+                loadingSpinner.classList.remove('visible');
+            }
+        }
+
 
         function activateCard() {
             const inputName = nameInput.value.trim();
@@ -795,6 +1095,9 @@
             setupContainer.style.display = 'none';
             categoryContainer.classList.add('visible');
             moodContainer.classList.add('visible');
+            
+            // Set default active states and display first insight
+            updateMoodButtons(activeMood);
             setCategory('relationships'); 
         }
 
@@ -817,8 +1120,6 @@
             }
 
             activeCategory = categoryKey;
-            const categoryName = CATEGORY_NAMES[categoryKey];
-            promptTextElement.textContent = `Hello, ${userName}! Loading...`;
             
             if (cardElement.classList.contains('revealed')) {
                  resetCard(true); 
@@ -830,8 +1131,18 @@
 
         function revealInsight() {
             if (cardElement.classList.contains('revealed')) return;
+            
+            setCardLoading(true); // Show spinner right before flip
 
             const availableInsights = getFilteredInsights(activeCategory, activeMood);
+
+            if (availableInsights.length === 0) {
+                 tipTextElement.textContent = `No ${activeMood} insights found for ${CATEGORY_NAMES[activeCategory]}. Try 'Any Mood'.`;
+                 cardElement.classList.add('revealed');
+                 setCardLoading(false); // Hide spinner
+                 resetButton.classList.add('visible');
+                 return;
+            }
 
             const randomIndex = Math.floor(Math.random() * availableInsights.length);
             let selectedInsight = availableInsights[randomIndex];
@@ -839,42 +1150,51 @@
             let finalText = typeof selectedInsight === 'string' ? selectedInsight : selectedInsight.text;
             finalText = personalize(finalText, userName);
 
-            tipTextElement.textContent = finalText;
-            cardElement.classList.add('revealed');
+            // Wait a moment for the 'loading' state to show, then flip
+            setTimeout(() => {
+                tipTextElement.textContent = finalText;
+                cardElement.classList.add('revealed');
+                setCardLoading(false); // Hide spinner on the front face after flip starts
+            }, 300); 
 
             setTimeout(() => {
                 resetButton.classList.add('visible');
-            }, 800);
+            }, 800); // Wait for flip animation to finish
         }
 
         function resetCard(forceReveal = true) {
             resetButton.classList.remove('visible');
             cardElement.classList.remove('revealed');
             
-            const categoryName = CATEGORY_NAMES[activeCategory];
-            promptTextElement.textContent = `Hello, ${userName}! Loading...`;
+            setCardLoading(true); // Show spinner while the card is reset on the front face
 
             setTimeout(() => {
                 tipTextElement.textContent = ""; 
-                if (forceReveal) revealInsight(); 
-                else promptTextElement.textContent = `Hello, ${userName}! Click for Insight.`;
-            }, 800); 
+                promptTextElement.textContent = `Hello, ${userName}! Click for Insight.`;
+                setCardLoading(false); // Stop showing the spinner and reveal the prompt
+                
+                if (forceReveal) {
+                    revealInsight();
+                } else {
+                    promptTextElement.textContent = `Hello, ${userName}! Click for Insight.`;
+                }
+            }, 500); // Time for the back face to disappear
         }
 
         // --- 4. INIT ---
         document.addEventListener('DOMContentLoaded', () => {
-            loadTheme(); // Load saved theme on startup
+            loadTheme();
 
             cardElement.addEventListener('click', revealInsight);
             startButton.addEventListener('click', activateCard);
-            themeToggle.addEventListener('click', toggleTheme); // New Listener
+            themeToggle.addEventListener('click', toggleTheme);
             
             categoryButtons.forEach(button => {
                 button.addEventListener('click', (e) => setCategory(e.currentTarget.dataset.category));
             });
 
-            moodButtons.forEach(button => {
-                button.addEventListener('click', (e) => setMood(e.currentTarget.dataset.mood));
+            moodContainers.forEach(container => {
+                container.addEventListener('click', (e) => setMood(e.currentTarget.dataset.mood));
             });
 
             resetButton.addEventListener('click', () => resetCard(true));
